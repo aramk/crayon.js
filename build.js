@@ -1,18 +1,13 @@
 ({
   baseUrl: '.',
   packages: [
-//    {
-//      name: 'jquery',
-//      location: 'lib'
-//    },
-//    {
-//      name: 'src',
-//      location: 'src'
-//    }
+    {
+      name: 'jquery',
+      location: 'lib',
+      main: 'jquery'
+    }
   ],
-  // TODO doesn't work
   exclude: ['jquery'],
-  excludeShallow: ['jquery'],
   name: 'src/main',
   out: 'build/crayon.min.js'
 })
