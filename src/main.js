@@ -14,10 +14,11 @@
         $.data(this, 'plugin_' + name, (function () {
           // Note: This loads asynchronously
           require(['Crayon'], function (Crayon) {
-            console.log('ready', Crayon);
-            new Crayon(query, options);
+            var crayon = new Crayon(query, options);
+            crayon._name = name;
+            console.log('crayon', crayon);
+            // TODO save crayon instance?
           });
-          console.error('done ready');
         })());
       }
     });
