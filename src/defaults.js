@@ -1,4 +1,6 @@
-define([], function () {
+define([
+  'jquery'
+], function ($) {
   return {
 
     selector: 'pre',
@@ -8,11 +10,15 @@ define([], function () {
     attrParser: function (attStr) {
       var match, atts = {};
       while ((match = this.reAttr.exec(attStr)) != null) {
-        console.log('match', match);
         atts[match[1]] = match[2];
       }
       return atts;
+    },
+    getValue: function (pre) {
+      return $(pre).html();
+    },
+    setValue: function (pre, value) {
+      $(pre).html(value);
     }
-
   };
 });
