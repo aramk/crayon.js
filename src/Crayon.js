@@ -13,30 +13,30 @@ define([
   // Define plugin
   Crayon.prototype = {
 
-    elems: null,
+    nodes: null,
 
     init: function () {
       console.error('init');
-      this.elems = this.query();
-      this.load(this.elems);
+      this.nodes = this.query();
+      this.load(this.nodes);
     },
 
     query: function () {
       return $(this.options.selector, this.element);
     },
 
-    load: function (elems) {
+    load: function (nodes) {
       var me = this;
-      elems.each(function (i, pre) {
-        var atts = $(pre).attr(me.options.attrSelector);
+      nodes.each(function (i, node) {
+        var atts = $(node).attr(me.options.attrSelector);
         var parsedAtts = me.options.attrParser(atts);
-        pre.crayon = {
+        node.crayon = {
           atts: parsedAtts
         };
         console.log('atts', parsedAtts);
-        var output = me.parse(me.options.getValue(pre), parsedAtts);
+        var output = me.parse(me.options.getValue(node), parsedAtts);
         if (output && output.length) {
-          me.options.setValue(pre, output);
+          me.options.setValue(node, output);
         }
         console.log('output', output);
       });
