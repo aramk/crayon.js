@@ -1,7 +1,14 @@
 define([
+  'module',
   'jquery', // src/jquery.js,
   'defaults'
-], function ($, defaults) {
+], function (module, $, defaults) {
+
+  console.error(module);
+
+  // TODO move to separate file
+  var langs = {};
+//  $.getJSON()
 
   function Crayon(element, options) {
     console.error('construct');
