@@ -1,44 +1,24 @@
+// RequireJS not used to ensure plugin is usable synchronously
 (function ($, window, document, undefined) {
 
-  console.error(1);
-
-  var pluginName = 'crayon',
-      defaults = {
-        propertyName: 'value'
-      };
-
-  function Plugin(element, options) {
-    console.error('construct');
-
-    this.element = element;
-
-    this.options = $.extend({}, defaults, options);
-
-    this._defaults = defaults;
-    this._name = pluginName;
-
-    this.init();
-  }
-
-  // Define plugin
-  Plugin.prototype = {
-
-    init: function () {
-      console.error('init');
-      // Run loader
-      // Cache languages
-      // Pass to compiler
-    }
-
-  };
+  require.config({
+    baseUrl: 'src'
+  });
 
   // Instantiate the plugin for jQuery
-  $.fn[pluginName] = function (options) {
-    console.error('selector');
-    return this.each(function () {
-      if (!$.data(this, 'plugin_' + pluginName)) {
-        console.error('new');
-        $.data(this, 'plugin_' + pluginName, new Plugin(this, options));
+  var name = 'crayon';
+  $.fn[name] = function (options) {
+    var query = this;
+    return query.each(function () {
+      if (!$.data(this, 'plugin_' + name)) {
+        $.data(this, 'plugin_' + name, (function () {
+          // Note: This loads asynchronously
+          require(['Crayon'], function (Crayon) {
+            console.log('ready', Crayon);
+            new Crayon(query, options);
+          });
+          console.error('done ready');
+        })());
       }
     });
   };
