@@ -1,5 +1,9 @@
+require.config({
+  baseUrl: 'src'
+});
+
 require([
-  'jquery'
+  './crayon-jquery'
 ], function ($) {
 
   console.error($);
