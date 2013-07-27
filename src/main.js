@@ -2,7 +2,13 @@
 (function ($, window, document, undefined) {
 
   require.config({
-    baseUrl: 'src'
+    baseUrl: 'src',
+    packages: [
+      {
+        name: 'langs',
+        location: '../langs'
+      }
+    ]
   });
 
   // Instantiate the plugin for jQuery
@@ -14,6 +20,10 @@
         $.data(this, 'plugin_' + name, (function () {
           // Note: This loads asynchronously
           require(['Crayon'], function (Crayon) {
+            options = $.extend(options, {
+              // TODO how do we configure this?
+              baseURL: ''
+            });
             var crayon = new Crayon(query, options);
             crayon._name = name;
             console.log('crayon', crayon);
