@@ -3,7 +3,7 @@ require.config({
 });
 
 require([
-  './crayon-jquery'
+  'jquery'
 ], function ($) {
 
   console.error($);
