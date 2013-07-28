@@ -19,6 +19,7 @@ define([
     setValue: function (pre, value) {
       $(pre).html(value);
     },
-    baseURL: ''
+    baseURL: '',
+    defaultLangID: 'default'
   };
 });

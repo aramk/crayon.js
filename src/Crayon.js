@@ -5,12 +5,6 @@ define([
   'langs/default' // TODO put in separate class
 ], function (module, $, defaults, defaultLang) {
 
-  console.error('defaultLang', defaultLang);
-
-  // TODO move to separate file
-  var langs = {};
-//  $.getJSON()
-
   function Crayon(element, options) {
     console.error('construct');
     this.element = element;
@@ -26,15 +20,12 @@ define([
     langs: {
       _index: null,
       _cache: null,
-//      _default: defaultLang, // TODO need this?
       options: null,
 
       init: function (options) {
         this.options = options;
-        this._cache = {
-          // TODO put in options
-          default: defaultLang
-        };
+        this._cache = {};
+        this._cache[this.options.defaultLangID] = defaultLang;
         var df = $.Deferred();
         if (!this._index) {
           $.getJSON(this.options.baseURL + 'langs/index.json', function (index) {
@@ -59,7 +50,7 @@ define([
             $.getScript(this._get(id))
                 .done(function (lang) {
                   me._cache[id] = lang;
-                  lang._compiled = false;
+                  lang._compiled = null;
                   df.resolve(lang);
                 }).fail(function () {
                   df.resolve(null);
@@ -83,15 +74,12 @@ define([
       compile: function (id, options) {
         var me = this;
         var df = $.Deferred();
-//        options = $.extend({}, this.options, options); // TODO not used atm
-        id = id || 'default'; // TODO put in the
-        console.error('looking for lang', id);
+        id = id || options.defaultLangID;
         this.get(id).then(function (lang) {
-          console.error('lang', lang);
-          var regex = lang.functions.compile(lang);
-          console.error('regex', regex);
-          df.resolve(lang);
-          // TODO compile the language
+          if (!lang._compiled) {
+            lang._compiled = lang.functions.compile(lang);
+          }
+          df.resolve(lang, lang._compiled);
         });
         return df;
       }
@@ -133,8 +121,8 @@ define([
       // TODO Return output
 
       // TODO use a deferred
-      this.langs.compile(atts.lang).then(function (lang) {
-
+      this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
+        console.error('lang', lang, regex);
           });
       console.log('value', value);
       return value;
