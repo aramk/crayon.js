@@ -59,7 +59,7 @@ define([
             $.getScript(this._get(id))
                 .done(function (lang) {
                   me._cache[id] = lang;
-                  lang._cached = false;
+                  lang._compiled = false;
                   df.resolve(lang);
                 }).fail(function () {
                   df.resolve(null);
@@ -80,14 +80,20 @@ define([
         return this._index && id in this._index;
       },
 
-      compile: function (value, options) {
+      compile: function (id, options) {
         var me = this;
-        options = $.extend({}, this.options, options);
-        var id = options.lang || 'default'; // TODO put in the
+        var df = $.Deferred();
+//        options = $.extend({}, this.options, options); // TODO not used atm
+        id = id || 'default'; // TODO put in the
         console.error('looking for lang', id);
         this.get(id).then(function (lang) {
           console.error('lang', lang);
+          var regex = lang.functions.compile(lang);
+          console.error('regex', regex);
+          df.resolve(lang);
+          // TODO compile the language
         });
+        return df;
       }
     },
 
@@ -125,9 +131,11 @@ define([
       // TODO Load language, cache
       // TODO Apply regex to code
       // TODO Return output
-      this.langs.compile(value, {
-        lang: atts.lang
-      });
+
+      // TODO use a deferred
+      this.langs.compile(atts.lang).then(function (lang) {
+
+          });
       console.log('value', value);
       return value;
     }

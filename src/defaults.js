@@ -2,7 +2,6 @@ define([
   'jquery'
 ], function ($) {
   return {
-
     selector: 'pre',
     attrSelector: 'data-crayon',
     // TODO must include global modifier, else infinite loop
