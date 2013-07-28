@@ -6,7 +6,10 @@ define(function () {
       name: 'Default'
     },
     elements: {
-      comment: '(/\\*.*?\\*/)|(//.*?$)'
+      comment: '(/\\*.*?\\*/)|(//.*?$)', // TODO can we use RegExp object?
+      string: /([^\\]|^)".*?([^\\]|^)"/ // TODO this matches the first character, we should ignore it
+      // '((?<!\\\\)".*?(?<!\\\\)")|((?<!\\\\)\'.*?(?<!\\\\)\')'
+      // (?:[^\\]|^)".*?(?:[^\\]|^)"
     },
     modifiers: 'gmi',
     functions: { // TODO remove key?
@@ -15,9 +18,11 @@ define(function () {
         for (var id in me.elements) {
           console.log('reElem', me.elements[id]);
           // TODO rather than remove groups, change algorithm to allow them for more complex regex with functions in elements
-          var reElem = me.functions.removeGroups(me.elements[id]);
-          console.log('reElem', reElem);
-          regexStr += '(' + reElem + ')|';
+          var elem = me.elements[id];
+//          elem = me.functions.convertLookbehinds(elem);
+          var elem = me.functions.regexToString(elem);
+          var elem = me.functions.removeGroups(elem);
+          regexStr += '(' + elem + ')|';
         }
         if (regexStr.length) {
           // Remove trailing character
@@ -27,8 +32,19 @@ define(function () {
         }
         return new RegExp(regexStr, me.modifiers);
       },
+      _reGroupRemove: /((?:[^\\]|^)\()/g,
       removeGroups: function (regexStr) {
-        return regexStr.replace(/((?:[^\\]|^)\()/g, '$1?:');
+        return regexStr.replace(this._reGroupRemove, '$1?:');
+      },
+      regexToString: function (re) {
+        var str = re.toString().replace(/\\/g, '\\\\');
+        return str.substring(1, str.length - 1);
+      },
+//      _reLookbehind: //g,
+      convertLookbehinds: function () {
+        // TODO needs some more thought
+        // TODO convert "(?<!a)b" -> "[^a]b" but only works for a single character
+        // TODO see http://stackoverflow.com/questions/641407/javascript-negative-lookbehind-equivalent
       }
     }
   };

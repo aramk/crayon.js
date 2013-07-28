@@ -20,6 +20,8 @@ define([
       $(pre).html(value);
     },
     baseURL: '',
-    defaultLangID: 'default'
+    defaultLangID: 'default',
+    // TODO collect regex in a single namespace?
+    reLookbehind: ''
   };
 });
