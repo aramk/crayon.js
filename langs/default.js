@@ -6,19 +6,22 @@ define(function () {
       name: 'Default'
     },
     elements: {
-//      comment: '(/\\*.*?\\*/)|(//.*?$)', // TODO can we use RegExp object?
-      comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
-      string: /([^\\]|^)".*?([^\\]|^)"/ // TODO this matches the first character, we should ignore it
+      comment: /(\/\*.*?\*\/)|(\/\/.*?$)/, // TODO this isn't working
+      string: /([^\\]|^)".*?([^\\]|^)"/, // TODO this matches the first character, we should ignore it,
+      test: /print/
       // '((?<!\\\\)".*?(?<!\\\\)")|((?<!\\\\)\'.*?(?<!\\\\)\')'
       // (?:[^\\]|^)".*?(?:[^\\]|^)"
     },
+    _elementsArray: null,
     functions: { // TODO remove key?
       compile: function (me) {
         var regexStr = '';
+        me._elementsArray = []
         for (var id in me.elements) {
           console.log('reElem', me.elements[id]);
           // TODO rather than remove groups, change algorithm to allow them for more complex regex with functions in elements
           var elem = me.elements[id];
+          me._elementsArray.push(id);
 //          elem = me.functions.convertLookbehinds(elem);
 //          console.error('elem-1', elem);
 //          var elem = me.functions.regexToString(elem);
@@ -37,6 +40,17 @@ define(function () {
         }
         console.error('regexStr', regexStr, new RegExp(regexStr, 'gmi'));
         return new RegExp(regexStr, 'gmi');
+      },
+      getMatchIndex: function (matches) {
+        if (matches.length > 1) {
+          for (var i = 1; i < matches.length; i++) {
+            var match = matches[i];
+            if (match) {
+              return i;
+            }
+          }
+        }
+        return null;
       },
       _reGroupRemove: /((?:[^\\]|^)\()/g,
       removeGroups: function (regexStr) {

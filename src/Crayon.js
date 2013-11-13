@@ -128,9 +128,14 @@ define([
       this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
         console.error('lang', lang, regex, value);
         // TODO refactor this into a single place and avoid infinite loops
-        var match;
-        while ((match = regex.exec(value)) != null) {
-          console.error('match', match);
+        var matches;
+        while ((matches = regex.exec(value)) != null) {
+          // TODO better to avoid linear search...
+          var index = lang.functions.getMatchIndex(matches);
+          if (index > 1) {
+            var elementID = lang._elementsArray[index - 1];
+            console.error('match', matches, index, elementID);
+          }
         }
       });
       console.log('value', value);
