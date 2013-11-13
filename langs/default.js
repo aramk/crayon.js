@@ -6,12 +6,12 @@ define(function () {
       name: 'Default'
     },
     elements: {
-      comment: '(/\\*.*?\\*/)|(//.*?$)', // TODO can we use RegExp object?
+//      comment: '(/\\*.*?\\*/)|(//.*?$)', // TODO can we use RegExp object?
+      comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
       string: /([^\\]|^)".*?([^\\]|^)"/ // TODO this matches the first character, we should ignore it
       // '((?<!\\\\)".*?(?<!\\\\)")|((?<!\\\\)\'.*?(?<!\\\\)\')'
       // (?:[^\\]|^)".*?(?:[^\\]|^)"
     },
-    modifiers: 'gmi',
     functions: { // TODO remove key?
       compile: function (me) {
         var regexStr = '';
@@ -20,8 +20,13 @@ define(function () {
           // TODO rather than remove groups, change algorithm to allow them for more complex regex with functions in elements
           var elem = me.elements[id];
 //          elem = me.functions.convertLookbehinds(elem);
-          var elem = me.functions.regexToString(elem);
-          var elem = me.functions.removeGroups(elem);
+//          console.error('elem-1', elem);
+//          var elem = me.functions.regexToString(elem);
+          console.error('elem0', elem);
+//          console.error('elem1', me.functions.regexToString(elem));
+          elem = elem.toString();
+          elem = elem.substring(1, elem.length - 1);
+          elem = me.functions.removeGroups(elem);
           regexStr += '(' + elem + ')|';
         }
         if (regexStr.length) {
@@ -30,7 +35,8 @@ define(function () {
         } else {
           console.error('No elements compiled', me);
         }
-        return new RegExp(regexStr, me.modifiers);
+        console.error('regexStr', regexStr, new RegExp(regexStr, 'gmi'));
+        return new RegExp(regexStr, 'gmi');
       },
       _reGroupRemove: /((?:[^\\]|^)\()/g,
       removeGroups: function (regexStr) {
@@ -38,6 +44,7 @@ define(function () {
       },
       regexToString: function (re) {
         var str = re.toString().replace(/\\/g, '\\\\');
+//        console.error('re', re, str.substring(1, str.length - 1));
         return str.substring(1, str.length - 1);
       },
 //      _reLookbehind: //g,

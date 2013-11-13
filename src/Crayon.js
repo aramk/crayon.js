@@ -18,8 +18,11 @@ define([
     nodes: null,
     // TODO move to another class later
     langs: {
+      // The index of languages
       _index: null,
+      // The cache of languages.
       _cache: null,
+      // Options passed in on init.
       options: null,
 
       init: function (options) {
@@ -29,10 +32,10 @@ define([
         var df = $.Deferred();
         if (!this._index) {
           $.getJSON(this.options.baseURL + 'langs/index.json', function (index) {
-            console.log('!!!', index);
+            index && console.log('index', index);
             this._index = index;
             df.resolve();
-          });
+          }); // TODO handle failure
         } else {
           df.resolve();
         }
@@ -123,7 +126,7 @@ define([
 
       // TODO use a deferred
       this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
-        console.error('lang', lang, regex);
+        console.error('lang', lang, regex, value);
         // TODO refactor this into a single place and avoid infinite loops
         var match;
         while ((match = regex.exec(value)) != null) {
