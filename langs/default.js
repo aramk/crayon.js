@@ -1,22 +1,23 @@
 // TODO this isn't JSON - is this limiting?
 // TODO if this is minified we should still be allowed to pass options to override it - since the minified code can't be modified
 define(function () {
-  return {
+  var lang = {
     info: {
       name: 'Default'
     },
     elements: {
-      comment: /(\/\*.*?\*\/)|(\/\/.*?$)/, // TODO this isn't working
+      comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
       string: /([^\\]|^)".*?([^\\]|^)"/, // TODO this matches the first character, we should ignore it,
       test: /print/
       // '((?<!\\\\)".*?(?<!\\\\)")|((?<!\\\\)\'.*?(?<!\\\\)\')'
       // (?:[^\\]|^)".*?(?:[^\\]|^)"
     },
+    tagPrefix: 'crayon',
     _elementsArray: null,
     functions: { // TODO remove key?
-      compile: function (me) {
+      compile: function (me) { // TODO remove me arg
         var regexStr = '';
-        me._elementsArray = []
+        me._elementsArray = [];
         for (var id in me.elements) {
           console.log('reElem', me.elements[id]);
           // TODO rather than remove groups, change algorithm to allow them for more complex regex with functions in elements
@@ -41,7 +42,13 @@ define(function () {
         console.error('regexStr', regexStr, new RegExp(regexStr, 'gmi'));
         return new RegExp(regexStr, 'gmi');
       },
+      // TODO use better name for value variable
+      transform: function (matchValue, args) {
+        console.error('matchValue, args', matchValue, args);
+        return '<span class="' + lang.tagPrefix + '-' + args.element + '">' + matchValue + '</span>';
+      },
       getMatchIndex: function (matches) {
+        console.error('matches', matches, matches.length);
         if (matches.length > 1) {
           for (var i = 1; i < matches.length; i++) {
             var match = matches[i];
@@ -69,4 +76,5 @@ define(function () {
       }
     }
   };
+  return lang;
 });

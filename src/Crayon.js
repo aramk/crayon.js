@@ -59,7 +59,6 @@ define([
                 }).fail(function () {
                   df.resolve(null);
                 });
-            df.resolve(null);
           } else {
             df.resolve(null);
           }
@@ -120,26 +119,39 @@ define([
     },
 
     compile: function (value, atts) {
-      // TODO Load language, cache
-      // TODO Apply regex to code
-      // TODO Return output
-
-      // TODO use a deferred
+      var output = '';
       this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
         console.error('lang', lang, regex, value);
         // TODO refactor this into a single place and avoid infinite loops
         var matches;
+        // Current position in original value.
+        var origIndex = 0;
         while ((matches = regex.exec(value)) != null) {
           // TODO better to avoid linear search...
-          var index = lang.functions.getMatchIndex(matches);
-          if (index > 1) {
-            var elementID = lang._elementsArray[index - 1];
-            console.error('match', matches, index, elementID);
+          var matchIndex = lang.functions.getMatchIndex(matches);
+          if (matchIndex !== null) {
+            var element = lang._elementsArray[matchIndex - 1];
+            console.error('match', matches, matchIndex, element);
+            var matchValue = value.slice(matches.index, matches.index + matches[0].length);
+            console.error('matchValue', matchValue);
+            // Copy preceding value.
+            output += value.slice(origIndex, matches.index);
+            origIndex = matches.index + matchValue.length;
+            // Delegate transformation to language.
+            output += lang.functions.transform(matchValue, {
+              element: element,
+              value: value,
+              regex: regex,
+              matchIndex: matchIndex,
+              matches: matches
+            });
           }
         }
+        // Copy remaining value.
+        output += value.slice(origIndex, value.length);
       });
       console.log('value', value);
-      return value;
+      return output;
     }
 
   };
