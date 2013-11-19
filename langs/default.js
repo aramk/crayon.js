@@ -8,14 +8,23 @@ define(function () {
     },
     elements: {
       comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
-      // TODO can't use /([^\\]|^)(["']).*?\1\2/ since we can't rely on numbered groups when we concat
-      //string: /([^\\]|^)(["']).*?([^\\]|^)(["'])/, // TODO this matches the first character, we should ignore it,
-      string: /([^\\]|^)(["']).*?\1\2/,
-      keyword: /print/ // TODO add ability to use lists and concat
-      // '((?<!\\\\)".*?(?<!\\\\)")|((?<!\\\\)\'.*?(?<!\\\\)\')'
-      // (?:[^\\]|^)".*?(?:[^\\]|^)"
+      preprocessor: /(#.*?$)/,
+      tag: null,
+      string: /([^\\]|^)(["']).*?\1\2/, // TODO this matches the first character, we should ignore it,
+      keyword: null,
+      statement: null, // TODO
+      reserved: null,
+      type: null,
+      modifier: null,
+      entity: null,
+      variable: null,
+      identifier: /\b[A-Za-z_]\w*\b/,
+      constant: /\b[0-9][\.\w]*/, // TODO
+      operator: null,
+      symbol: null
     },
     cssPrefix: 'crayon', // TODO repeat of pluginId in defaults, load from there?
+    // Stores a list of the elements used during compilation. The order allows us to determine which group was matched.
     _elementsArray: null,
     functions: { // TODO remove key?
       compile: function (me) { // TODO remove me arg
@@ -25,12 +34,14 @@ define(function () {
           console.log('reElem', me.elements[id]);
           // TODO rather than remove groups, change algorithm to allow them for more complex regex with functions in elements
           var elem = me.elements[id];
-          me._elementsArray.push(id);
-          elem = elem.toString();
-          elem = elem.substring(1, elem.length - 1);
-          elem = me.functions.expandBackrefs(elem);
-          elem = me.functions.removeGroups(elem);
-          regexStr += '(' + elem + ')|';
+          if (elem) {
+            me._elementsArray.push(id);
+            elem = elem.toString();
+            elem = elem.substring(1, elem.length - 1);
+            elem = me.functions.expandBackrefs(elem);
+            elem = me.functions.removeGroups(elem);
+            regexStr += '(' + elem + ')|';
+          }
         }
         if (regexStr.length) {
           // Remove trailing character

@@ -3,13 +3,21 @@
 
   pre.crayon& {
     margin: 4px;
-    padding: 4px 0px;
+    padding: 2px 4px;
   }
 
   // Highlighting
   .crayon- {
-    &string {color: green}
-    &comment {color: orange}
-    &keyword {color: purple}
+    &comment {color: #ff8000}
+    &preprocessor {color: #b85c00}
+    &tag {color: #FF0000}
+    &string {color: #008000}
+    &keyword, &statement, &reserved, &type, &modifier {color: #800080}
+    &entity {color: #004ed0}
+    &variable {color: #002D7A}
+    &identifier {color: #000}
+    &constant {color: #ce0000}
+    &operator {color: #006fe0}
+    &symbol {color: #333}
   }
 }
