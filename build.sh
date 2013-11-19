@@ -3,3 +3,5 @@ cd $DIR
 
 # Uses RequireJS Optimiser
 r.js -o build.js
+
+lessc -x less/crayon.less build/crayon.min.css
