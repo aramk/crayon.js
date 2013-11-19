@@ -1,6 +1,7 @@
 // TODO this isn't JSON - is this limiting?
 // TODO if this is minified we should still be allowed to pass options to override it - since the minified code can't be modified
 define(function () {
+  // TODO we need to extend this for other languages and override
   var lang = {
     info: {
       name: 'Default'
@@ -8,11 +9,11 @@ define(function () {
     elements: {
       comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
       string: /([^\\]|^)".*?([^\\]|^)"/, // TODO this matches the first character, we should ignore it,
-      test: /print/
+      keyword: /print/ // TODO add ability to use lists and concat
       // '((?<!\\\\)".*?(?<!\\\\)")|((?<!\\\\)\'.*?(?<!\\\\)\')'
       // (?:[^\\]|^)".*?(?:[^\\]|^)"
     },
-    tagPrefix: 'crayon',
+    cssPrefix: 'crayon', // TODO repeat of pluginId in defaults, load from there?
     _elementsArray: null,
     functions: { // TODO remove key?
       compile: function (me) { // TODO remove me arg
@@ -45,7 +46,7 @@ define(function () {
       // TODO use better name for value variable
       transform: function (matchValue, args) {
         console.error('matchValue, args', matchValue, args);
-        return '<span class="' + lang.tagPrefix + '-' + args.element + '">' + matchValue + '</span>';
+        return '<span class="' + lang.cssPrefix + '-' + args.element + '">' + matchValue + '</span>';
       },
       getMatchIndex: function (matches) {
         console.error('matches', matches, matches.length);

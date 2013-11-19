@@ -12,14 +12,11 @@ define([
     this.init();
   }
 
-  // Define plugin
   Crayon.prototype = {
 
     nodes: null,
     // TODO move to another class later
     langs: {
-      // The index of languages
-      _index: null,
       // The cache of languages.
       _cache: null,
       // Options passed in on init.
@@ -28,18 +25,7 @@ define([
       init: function (options) {
         this.options = options;
         this._cache = {};
-        this._cache[options.defaultLangID] = defaultLang;
-        var df = $.Deferred();
-        if (!this._index) {
-          $.getJSON(this.options.baseURL + 'langs/index.json', function (index) {
-            index && console.log('index', index);
-            this._index = index;
-            df.resolve();
-          }); // TODO handle failure
-        } else {
-          df.resolve();
-        }
-        return df;
+        this._cache[options.defaultLangId] = defaultLang;
       },
 
       get: function (id) {
@@ -50,34 +36,23 @@ define([
         if (lang) {
           df.resolve(lang);
         } else {
-          if (me.exists(id)) {
-            $.getScript(this._get(id))
-                .done(function (lang) {
-                  me._cache[id] = lang;
-                  lang._compiled = null;
-                  df.resolve(lang);
-                }).fail(function () {
-                  df.resolve(null);
-                });
-          } else {
-            df.resolve(null);
-          }
+          // TODO use require() instead
+          $.getScript(id)
+              .done(function (lang) {
+                me._cache[id] = lang;
+                lang._compiled = null;
+                df.resolve(lang);
+              }).fail(function () {
+                df.resolve(null);
+              });
         }
         return df;
-      },
-
-      _get: function (id) {
-        return this._index ? this._index[id] : null;
-      },
-
-      exists: function (id) {
-        return this._index && id in this._index;
       },
 
       compile: function (id, options) {
         var me = this;
         var df = $.Deferred();
-        id = id || options.defaultLangID;
+        id = id || options.defaultLangId;
         this.get(id).then(function (lang) {
           if (!lang._compiled) {
             lang._compiled = lang.functions.compile(lang);
@@ -88,22 +63,52 @@ define([
       }
     },
 
+    // TODO move to separate file
+    themes: {
+      _cache: null,
+      init: function (options) {
+        this.options = options;
+        this._cache = {};
+        // Default theme is assumed to be bundled.
+        this._cache[options.defaultThemeId] = true;
+      },
+
+      load: function (id) {
+        var theme = this._cache[id];
+        if (!theme) {
+          var $css = $('<link rel="stylesheet" type="text/css">');
+          $('head').append($css[0]);
+          // TODO we need to decide on the folder structure for themes
+          // TODO fallback to classic if this fails - perhaps we should create a style tag instead
+          // and use $.get to detect failure.
+          // TODO even better, we should be able to combine certain themes into the core.css and prevent need to load
+          $css.attr('href', this.options.themeURL(id));
+        }
+      }
+    },
+
     init: function () {
       var me = this;
       console.error('init', me.options);
-      me.langs.init(me.options).then(function () {
-        me.nodes = me.query();
-        me.load(me.nodes);
-      });
+      me.themes.init(me.options);
+      me.langs.init(me.options);
+      me.nodes = me.query();
+      me.load(me.nodes);
     },
 
+    /**
+     * @returns {?HTMLElement[]} The elements within the selected element which
+     * match our selector for finding code.
+     */
     query: function () {
       return $(this.options.selector, this.element);
     },
 
+    // TODO separate out code which manipulates or compiles
     load: function (nodes) {
       var me = this;
       nodes.each(function (i, node) {
+        var $node = $(node);
         var atts = $(node).attr(me.options.attrSelector);
         var parsedAtts = me.options.attrParser(atts);
         node.crayon = {
@@ -114,6 +119,11 @@ define([
         if (output && output.length) {
           me.options.setValue(node, output);
         }
+        $node.addClass(me.options.pluginId);
+        var themeId = parsedAtts.theme || me.options.defaultThemeId;
+        me.themes.load(themeId);
+        $node.addClass(me.options.themeCssClass(themeId));
+        $node.html(output);
         console.log('output', output);
       });
     },

@@ -9,6 +9,7 @@
       relativeUrls: true
     };
   </script>
+  <link rel="stylesheet" type="text/css" href="lib/normalize.css" />
   <link rel="stylesheet/less" type="text/css" href="less/crayon.less" />
   <script src="lib/less.js"></script>
   <script>require = undefined</script>
@@ -22,18 +23,22 @@
   <!--<script src="build/crayon.min.js"></script>-->
 
   <script>
-      $(function () {
-        $('body').crayon({});
-      });
+    $(function () {
+      $('body').crayon({});
+    });
   </script>
 
 </head>
 <body>
 
-<pre class="" data-crayon="lang_:php; theme:twilight; mark:1,2-4" title="Sample">
+  <div style="width: 800px; margin: 0 auto;">
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+<pre class="" data-crayon="lang_:php; theme:classic; mark:1,2-4" title="Sample">
   // Some Sample code
   print "hello world"
 </pre>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+  </div>
 
 </body>
 </html>
