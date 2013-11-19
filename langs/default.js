@@ -8,7 +8,9 @@ define(function () {
     },
     elements: {
       comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
-      string: /([^\\]|^)".*?([^\\]|^)"/, // TODO this matches the first character, we should ignore it,
+      // TODO can't use /([^\\]|^)(["']).*?\1\2/ since we can't rely on numbered groups when we concat
+      //string: /([^\\]|^)(["']).*?([^\\]|^)(["'])/, // TODO this matches the first character, we should ignore it,
+      string: /([^\\]|^)(["']).*?\1\2/,
       keyword: /print/ // TODO add ability to use lists and concat
       // '((?<!\\\\)".*?(?<!\\\\)")|((?<!\\\\)\'.*?(?<!\\\\)\')'
       // (?:[^\\]|^)".*?(?:[^\\]|^)"
@@ -24,13 +26,9 @@ define(function () {
           // TODO rather than remove groups, change algorithm to allow them for more complex regex with functions in elements
           var elem = me.elements[id];
           me._elementsArray.push(id);
-//          elem = me.functions.convertLookbehinds(elem);
-//          console.error('elem-1', elem);
-//          var elem = me.functions.regexToString(elem);
-          console.error('elem0', elem);
-//          console.error('elem1', me.functions.regexToString(elem));
           elem = elem.toString();
           elem = elem.substring(1, elem.length - 1);
+          elem = me.functions.expandBackrefs(elem);
           elem = me.functions.removeGroups(elem);
           regexStr += '(' + elem + ')|';
         }
@@ -60,14 +58,47 @@ define(function () {
         }
         return null;
       },
+      _reBackref: /\\(\d)\b/g,
+      // TODO this isn't perfect, doesn't check that ( is not escaped.
+      _reGroup: /\(.*?[^\\]\)/g,
       _reGroupRemove: /((?:[^\\]|^)\()/g,
+      expandBackrefs: function (regexStr) {
+        var backrefMatches = this.matchAll(this._reBackref, regexStr);
+        var backrefs = {};
+        if (backrefMatches.length) {
+          for (var i = 0; i < backrefMatches.length; i++) {
+            backrefs[parseInt(backrefMatches[i][1])] = backrefMatches[i][0];
+          }
+          var groups = regexStr.match(this._reGroup);
+          for (var groupId in backrefs) {
+            var group = groups[groupId - 1];
+            regexStr = regexStr.replace(backrefs[groupId], group);
+          }
+        }
+        return regexStr;
+      },
       removeGroups: function (regexStr) {
         return regexStr.replace(this._reGroupRemove, '$1?:');
       },
+      // TODO put in utils
       regexToString: function (re) {
         var str = re.toString().replace(/\\/g, '\\\\');
 //        console.error('re', re, str.substring(1, str.length - 1));
         return str.substring(1, str.length - 1);
+      },
+      matchAll: function (regex, string) {
+        var match = null, matches = [];
+        while (match = regex.exec(string)) {
+          var matchArray = [];
+          for (i in match) {
+            if (parseInt(i) == i) {
+              matchArray.push(match[i]);
+            }
+          }
+          matchArray.index = match.index;
+          matches.push(matchArray);
+        }
+        return matches;
       },
 //      _reLookbehind: //g,
       convertLookbehinds: function () {

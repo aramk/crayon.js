@@ -136,6 +136,7 @@ define([
         var matches;
         // Current position in original value.
         var origIndex = 0;
+        // TODO possible to replace with string.match()?
         while ((matches = regex.exec(value)) != null) {
           // TODO better to avoid linear search...
           var matchIndex = lang.functions.getMatchIndex(matches);
