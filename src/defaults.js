@@ -2,6 +2,7 @@ define([
   'jquery'
 ], function ($) {
   return {
+    // Strings
     pluginId: 'crayon',
     selector: 'pre',
     baseURL: '',
@@ -9,10 +10,16 @@ define([
     defaultThemeId: 'classic',
     themeDir: 'themes',
     attrSelector: 'data-crayon',
+    // Regex
     // TODO must include global modifier, else infinite loop
     reAttr: /(\w+\s*):(\s*[^;]+)/g,
-    // TODO collect regex in a single namespace?
-    reLookbehind: '',
+    // Override this object to mixin properties into the language.
+    lang: {
+      // Accepts 'spaces', 'tabs' or null to prevent transforming.
+      indent: 'spaces',
+      spacesInTab: 4
+    },
+    // Methods
     attrParser: function (attStr) {
       var match, atts = {};
       while ((match = this.reAttr.exec(attStr)) != null) {

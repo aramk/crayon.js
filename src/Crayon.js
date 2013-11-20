@@ -25,7 +25,7 @@ define([
       init: function (options) {
         this.options = options;
         this._cache = {};
-        this._cache[options.defaultLangId] = defaultLang;
+        this.addToCache(options.defaultLangId, defaultLang);
       },
 
       get: function (id) {
@@ -39,7 +39,7 @@ define([
           // TODO use require() instead
           $.getScript(id)
               .done(function (lang) {
-                me._cache[id] = lang;
+                me.addToCache(id, lang);
                 lang._compiled = null;
                 df.resolve(lang);
               }).fail(function () {
@@ -49,13 +49,18 @@ define([
         return df;
       },
 
+      addToCache: function (id, lang) {
+        this._cache[id] = lang;
+        $.extend(lang, this.options.lang);
+      },
+
       compile: function (id, options) {
         var me = this;
         var df = $.Deferred();
         id = id || options.defaultLangId;
         this.get(id).then(function (lang) {
           if (!lang._compiled) {
-            lang._compiled = lang.functions.compile(lang);
+            lang._compiled = lang.compile(lang);
           }
           df.resolve(lang, lang._compiled);
         });
@@ -67,6 +72,7 @@ define([
     themes: {
       _cache: null,
       init: function (options) {
+        // TODO refactor this with the languages
         this.options = options;
         this._cache = {};
         // Default theme is assumed to be bundled.
@@ -131,6 +137,7 @@ define([
     compile: function (value, atts) {
       var output = '';
       this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
+        value = lang.preTransform(value);
         console.error('lang', lang, regex, value);
         // TODO refactor this into a single place and avoid infinite loops
         var matches;
@@ -139,7 +146,7 @@ define([
         // TODO possible to replace with string.match()?
         while ((matches = regex.exec(value)) != null) {
           // TODO better to avoid linear search...
-          var matchIndex = lang.functions.getMatchIndex(matches);
+          var matchIndex = lang.getMatchIndex(matches);
           if (matchIndex !== null) {
             var element = lang._elementsArray[matchIndex - 1];
             console.error('match', matches, matchIndex, element);
@@ -149,7 +156,7 @@ define([
             output += value.slice(origIndex, matches.index);
             origIndex = matches.index + matchValue.length;
             // Delegate transformation to language.
-            output += lang.functions.transform(matchValue, {
+            output += lang.transform(matchValue, {
               element: element,
               value: value,
               regex: regex,
