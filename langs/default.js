@@ -11,27 +11,28 @@ define(function () {
       preprocessor: /(#.*?$)/,
       tag: null,
       string: /([^\\]|^)(["']).*?\1\2/, // TODO this matches the first character, we should ignore it,
-      // TODO provide array function for this
-      keyword: ['enddeclare', 'endforeach', 'endswitch', 'continue', 'endwhile', 'foreach', 'finally', 'default', 'elseif', 'endfor', 'return', 'switch', 'assert', 'break', 'catch', 'endif', 'throw', 'while', 'then', 'case', 'else', 'goto', 'each', 'and', 'for', 'try', 'use', 'xor', 'and', 'not', 'end', 'as', 'do', 'if', 'or', 'in', 'is', 'to'],
-      statement: null, // TODO
-      reserved: null,
-      type: null,
-      modifier: null,
-      entity: null,
-      variable: null,
+      keyword: null,
+      statement: ['enddeclare', 'endforeach', 'endswitch', 'continue', 'endwhile', 'foreach', 'finally', 'default', 'elseif', 'endfor', 'return', 'switch', 'assert', 'break', 'catch', 'endif', 'throw', 'while', 'then', 'case', 'else', 'goto', 'each', 'and', 'for', 'try', 'use', 'xor', 'and', 'not', 'end', 'as', 'do', 'if', 'or', 'in', 'is', 'to'],
+      reserved: ['implements', 'instanceof', 'declare', 'default', 'extends', 'typedef', 'parent', 'super', 'child', 'clone', 'self', 'this', 'new'],
+      type: ['cfunction', 'interface', 'namespace', 'function', 'unsigned', 'boolean', 'integer', 'package', 'double', 'struct', 'string', 'signed', 'object', 'class', 'array', 'float', 'short', 'false', 'char', 'long', 'void', 'word', 'byte', 'bool', 'null', 'true', 'enum', 'var', 'int'],
+      modifier: ['protected', 'abstract', 'property', 'private', 'global', 'public', 'static', 'native', 'const', 'final'],
+      entity: /(\b[a-z_]\w*\b(?=\s*\([^\)]*\)))|(\b[a-z_]\w+\b\s+(?=\b[a-z_]\w+\b))/,
+      variable: /([A-Za-z_]\w*(?=\s*[=\[\.]))/,
       identifier: /\b[A-Za-z_]\w*\b/,
-      constant: /\b[0-9][\.\w]*/, // TODO
-      operator: null,
-      symbol: null
+      constant: /\b[0-9][\.\w]*/,
+//      operator: ['=&', '<<<', '>>>', '<<', '>>', '<<=', '=>>', '!==', '!=', '^=', '*=', '&=', '%=', '|=', '/=', '===', '==', '<>', '->', '<=', '>=', '++', '--', '&&', '||', '::', '', '#', '+', '-', '*', '/', '%', '=', '&', '|', '^', '~', '!', '<', '>', ':'],
+      symbol: ['~', '`', '!', '@', '#', '$', '%', '(', ')', '_', '{', '}', '[', ']', '|', '\\', ':', ';', ',', '.', '?']
     },
     cssPrefix: 'crayon', // TODO repeat of pluginId in defaults, load from there?
     // Stores a list of the elements used during compilation. The order allows us to determine which group was matched.
     _elementsArray: null,
     regex: {
+      // Whether to compile each element regex string into a RegExp object. Helps find invalid regexes.
+      debug: true,
       backref: /\\(\d)\b/g,
       // TODO this isn't perfect, doesn't check that ( is not escaped.
       group: /\(.*?[^\\]\)/g,
-      groupRemove: /((?:[^\\]|^)\()/g,
+      groupRemove: /((?:[^\\]|^)\((?!\?))/g,
       expandBackrefs: function (regexStr) {
         var backrefMatches = this.matchAll(this.backref, regexStr);
         var backrefs = {};
@@ -77,7 +78,20 @@ define(function () {
         // TODO see http://stackoverflow.com/questions/641407/javascript-negative-lookbehind-equivalent
       },
       alternation: function (array) {
+        array.sort(function (a, b) {
+          // Reverse sort the array of strings.
+          return a.length < b.length ? 1 : (a.length > b.length ? -1 : 0);
+        });
+        var me = this;
+        array = array.map(function (item) {
+          // Escape regex characters.
+          return me.escape(item);
+        });
         return new RegExp('\\b(' + array.join('|') + ')\\b');
+      },
+      escape: function (str) {
+//        return str.replace(/([\\|/*+?{}()\[\]^$.-])/g, '\\$1');
+        return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
       }
     },
     compile: function (me) { // TODO remove me arg
@@ -96,7 +110,12 @@ define(function () {
           elem = elem.substring(1, elem.length - 1);
           elem = me.regex.expandBackrefs(elem);
           elem = me.regex.removeGroups(elem);
-          regexStr += '(' + elem + ')|';
+          if (me.debug) {
+            elem = new RegExp(elem);
+            regexStr += '(' + elem.toString() + ')|';
+          } else {
+            regexStr += '(' + elem + ')|';
+          }
         }
       }
       if (regexStr.length) {
@@ -135,7 +154,7 @@ define(function () {
       if (matches.length > 1) {
         for (var i = 1; i < matches.length; i++) {
           var match = matches[i];
-          if (match) {
+          if (typeof match != 'undefined') {
             return i;
           }
         }
