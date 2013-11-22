@@ -10,17 +10,20 @@ define(function () {
       comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
       preprocessor: /(#.*?$)/,
       tag: null,
-      string: /([^\\]|^)(["']).*?\1\2/, // TODO this matches the first character, we should ignore it,
+      string: /(["']).*?([^\\]|^)(["'])/, // TODO this matches the first character, we should ignore it,
       keyword: null,
       statement: ['enddeclare', 'endforeach', 'endswitch', 'continue', 'endwhile', 'foreach', 'finally', 'default', 'elseif', 'endfor', 'return', 'switch', 'assert', 'break', 'catch', 'endif', 'throw', 'while', 'then', 'case', 'else', 'goto', 'each', 'and', 'for', 'try', 'use', 'xor', 'and', 'not', 'end', 'as', 'do', 'if', 'or', 'in', 'is', 'to'],
       reserved: ['implements', 'instanceof', 'declare', 'default', 'extends', 'typedef', 'parent', 'super', 'child', 'clone', 'self', 'this', 'new'],
       type: ['cfunction', 'interface', 'namespace', 'function', 'unsigned', 'boolean', 'integer', 'package', 'double', 'struct', 'string', 'signed', 'object', 'class', 'array', 'float', 'short', 'false', 'char', 'long', 'void', 'word', 'byte', 'bool', 'null', 'true', 'enum', 'var', 'int'],
       modifier: ['protected', 'abstract', 'property', 'private', 'global', 'public', 'static', 'native', 'const', 'final'],
       entity: /(\b[a-z_]\w*\b(?=\s*\([^\)]*\)))|(\b[a-z_]\w+\b\s+(?=\b[a-z_]\w+\b))/,
-      variable: /([A-Za-z_]\w*(?=\s*[=\[\.]))/,
+      variable: /([A-Za-z_]\w*(?=\s*[=\[\.]))/, // TODO this can cause inconsistencies
       identifier: /\b[A-Za-z_]\w*\b/,
       constant: /\b[0-9][\.\w]*/,
-//      operator: ['=&', '<<<', '>>>', '<<', '>>', '<<=', '=>>', '!==', '!=', '^=', '*=', '&=', '%=', '|=', '/=', '===', '==', '<>', '->', '<=', '>=', '++', '--', '&&', '||', '::', '', '#', '+', '-', '*', '/', '%', '=', '&', '|', '^', '~', '!', '<', '>', ':'],
+      operator: {
+        items: ['=&', '<<<', '>>>', '<<', '>>', '<<=', '=>>', '!==', '!=', '^=', '*=', '&=', '%=', '|=', '/=', '===', '==', '<>', '->', '<=', '>=', '++', '--', '&&', '||', '::', '#', '+', '-', '*', '/', '%', '=', '&', '|', '^', '~', '!', '<', '>', ':'],
+        wordBounded: false
+      },
       symbol: ['~', '`', '!', '@', '#', '$', '%', '(', ')', '_', '{', '}', '[', ']', '|', '\\', ':', ';', ',', '.', '?']
     },
     cssPrefix: 'crayon', // TODO repeat of pluginId in defaults, load from there?
@@ -77,17 +80,22 @@ define(function () {
         // TODO convert "(?<!a)b" -> "[^a]b" but only works for a single character
         // TODO see http://stackoverflow.com/questions/641407/javascript-negative-lookbehind-equivalent
       },
-      alternation: function (array) {
+      alternation: function (array, wordBounded) {
+        wordBounded = typeof wordBounded == 'undefined' ? true : wordBounded;
         array.sort(function (a, b) {
           // Reverse sort the array of strings.
           return a.length < b.length ? 1 : (a.length > b.length ? -1 : 0);
         });
         var me = this;
-        array = array.map(function (item) {
+        var cleaned = [];
+        array.forEach(function (item) {
           // Escape regex characters.
-          return me.escape(item);
+          item = me.escape(item);
+          item.length && cleaned.push(item);
         });
-        return new RegExp('\\b(' + array.join('|') + ')\\b');
+        var regex = cleaned.join('|');
+        regex = wordBounded ? '\\b(' + regex + ')\\b' : regex;
+        return new RegExp(regex);
       },
       escape: function (str) {
         return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
@@ -104,6 +112,9 @@ define(function () {
           me._elementsArray.push(id);
           if (elem instanceof Array) {
             elem = me.regex.alternation(elem);
+          } else if (elem instanceof Object && !(elem instanceof RegExp)) {
+            // TODO avoided using getTypeOf, might be slower
+            elem = me.regex.alternation(elem.items, elem.wordBounded);
           }
           elem = elem.toString();
           elem = elem.substring(1, elem.length - 1);
@@ -158,6 +169,10 @@ define(function () {
         }
       }
       return null;
+    },
+    // TODO add to util, might also be too slow to use?
+    getTypeOf: function (/*anything*/ object) {
+      return Object.prototype.toString.call(object).slice(8, -1);
     }
   };
   return lang;
