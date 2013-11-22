@@ -144,6 +144,7 @@ define([
         // Current position in original value.
         var origIndex = 0;
         // TODO possible to replace with string.match()?
+        var lastMatchIndex = null;
         while ((matches = regex.exec(value)) != null) {
           // TODO better to avoid linear search...
           var matchIndex = lang.getMatchIndex(matches);
@@ -164,6 +165,12 @@ define([
               matches: matches
             });
           }
+          // Prevents infinite loops.
+          if (lastMatchIndex == matches.index) {
+            console.error('lastMatchIndex', matches.index);
+            break;
+          }
+          lastMatchIndex = matches.index;
         }
         // Copy remaining value.
         output += value.slice(origIndex, value.length);

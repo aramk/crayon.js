@@ -90,7 +90,6 @@ define(function () {
         return new RegExp('\\b(' + array.join('|') + ')\\b');
       },
       escape: function (str) {
-//        return str.replace(/([\\|/*+?{}()\[\]^$.-])/g, '\\$1');
         return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
       }
     },
@@ -112,10 +111,9 @@ define(function () {
           elem = me.regex.removeGroups(elem);
           if (me.debug) {
             elem = new RegExp(elem);
-            regexStr += '(' + elem.toString() + ')|';
-          } else {
-            regexStr += '(' + elem + ')|';
           }
+          console.error('elem', elem);
+          regexStr += '(' + elem.toString() + ')|';
         }
       }
       if (regexStr.length) {
