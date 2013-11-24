@@ -1,6 +1,9 @@
 // TODO this isn't JSON - is this limiting?
 // TODO if this is minified we should still be allowed to pass options to override it - since the minified code can't be modified
-define(function () {
+
+define([
+  'utility/Log'
+], function (Log) {
   // TODO we need to extend this for other languages and override
   var lang = {
     info: {
@@ -57,7 +60,6 @@ define(function () {
       // TODO put in utils
       regexToString: function (re) {
         var str = re.toString().replace(/\\/g, '\\\\');
-//        console.error('re', re, str.substring(1, str.length - 1));
         return str.substring(1, str.length - 1);
       },
       matchAll: function (regex, string) {
@@ -105,7 +107,6 @@ define(function () {
       var regexStr = '';
       me._elementsArray = [];
       for (var id in me.elements) {
-        console.log('reElem', me.elements[id]);
         // TODO rather than remove groups, change algorithm to allow them for more complex regex with functions in elements
         var elem = me.elements[id];
         if (elem) {
@@ -123,7 +124,6 @@ define(function () {
           if (me.debug) {
             elem = new RegExp(elem);
           }
-          console.error('elem', elem);
           regexStr += '(' + elem.toString() + ')|';
         }
       }
@@ -131,9 +131,8 @@ define(function () {
         // Remove trailing character
         regexStr = regexStr.substring(0, regexStr.length - 1);
       } else {
-        console.error('No elements compiled', me);
+        Log.error('No elements compiled', me);
       }
-      console.error('regexStr', regexStr, new RegExp(regexStr, 'gmi'));
       return new RegExp(regexStr, 'gmi');
     },
     spacesInTabString: function () {
@@ -155,11 +154,9 @@ define(function () {
     },
     // TODO use better name for value variable
     transform: function (matchValue, args) {
-      console.error('matchValue, args', matchValue, args);
       return '<span class="' + lang.cssPrefix + '-' + args.element + '">' + matchValue + '</span>';
     },
     getMatchIndex: function (matches) {
-      console.error('matches', matches, matches.length);
       if (matches.length > 1) {
         for (var i = 1; i < matches.length; i++) {
           var match = matches[i];

@@ -2,13 +2,15 @@ define([
   'module',
   'jquery', // src/jquery.js,
   'defaults',
-  'langs/default' // TODO put in separate class
-], function (module, $, defaults, defaultLang) {
+  'langs/default', // TODO put in separate class
+  'utility/Log'
+], function (module, $, defaults, defaultLang, Log) {
 
   function Crayon(element, options) {
     this.element = element;
     this.options = $.extend({}, defaults, options);
     this.init();
+    Log.info('Crayon init, options:', this.options, 'element:', this.element);
   }
 
   Crayon.prototype = {
@@ -31,19 +33,10 @@ define([
         var me = this;
         var df = $.Deferred();
         var lang = this._cache[id];
-        console.log('cache?', this._cache, id);
         if (lang) {
           df.resolve(lang);
         } else {
-          // TODO use require() instead
-//          if (me.options.lang.cache) {
-//            $.ajaxSetup({
-//              cache: true
-//            });
-//          }
-
           // TODO requested URL needs to be configured
-//          $.getScript(id)
           me.getScript(id, {
             cache: me.options.lang.cache
           }).done(function (lang) {
@@ -58,15 +51,11 @@ define([
       },
 
       getScript: function (url, options) {
-        // Allow user to set any option except for dataType, cache, and url
         options = $.extend({
           dataType: 'script',
           cache: true,
           url: url
         }, options);
-        console.error('options', options);
-        // Use $.ajax() since it is more flexible than $.getScript
-        // Return the jqXHR object so we can chain callbacks
         return $.ajax(options);
       },
 
@@ -120,7 +109,6 @@ define([
 
     init: function () {
       var me = this;
-      console.error('init', me.options);
       me.themes.init(me.options);
       me.langs.init(me.options);
       me.nodes = me.query();
@@ -145,7 +133,7 @@ define([
         node.crayon = {
           atts: parsedAtts
         };
-        console.log('atts', parsedAtts);
+        Log.info('Attributes for node', this.element, parsedAtts);
         var output = me.compile(me.options.getValue(node), parsedAtts);
         if (output && output.length) {
           me.options.setValue(node, output);
@@ -155,19 +143,19 @@ define([
         me.themes.load(themeId);
         $node.addClass(me.options.themeCssClass(themeId));
         $node.html(output);
-        console.log('output', output);
       });
     },
 
+    // TODO rename to parse or highlight?
     compile: function (value, atts) {
       var output = '';
       this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
         if (!lang) {
-          console.error('Could not compile');
+          Log.error('Could not compile', atts.lang);
           return null;
         }
         value = lang.preTransform(value);
-        console.error('lang', lang, regex, value);
+        Log.info('Compiled language', lang);
         // TODO refactor this into a single place and avoid infinite loops
         var matches;
         // Current position in original value.
@@ -179,9 +167,7 @@ define([
           var matchIndex = lang.getMatchIndex(matches);
           if (matchIndex !== null) {
             var element = lang._elementsArray[matchIndex - 1];
-            console.error('match', matches, matchIndex, element);
             var matchValue = value.slice(matches.index, matches.index + matches[0].length);
-            console.error('matchValue', matchValue);
             // Copy preceding value.
             output += value.slice(origIndex, matches.index);
             origIndex = matches.index + matchValue.length;
@@ -196,7 +182,7 @@ define([
           }
           // Prevents infinite loops.
           if (lastMatchIndex == matches.index) {
-            console.error('lastMatchIndex', matches.index);
+            Log.warn('Match not found, aborting');
             break;
           }
           lastMatchIndex = matches.index;
@@ -204,7 +190,6 @@ define([
         // Copy remaining value.
         output += value.slice(origIndex, value.length);
       });
-      console.log('value', value);
       return output;
     }
 
