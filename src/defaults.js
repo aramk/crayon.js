@@ -28,11 +28,17 @@ define([
       }
       return atts;
     },
-    getValue: function (pre) {
+    getHtmlValue: function (pre) {
+      return $(pre).html();
+    },
+    getTextValue: function (pre) {
       return $(pre).text();
     },
-    setValue: function (pre, value) {
+    setHtmlValue: function (pre, value) {
       $(pre).html(value);
+    },
+    setTextValue: function (pre, value) {
+      $(pre).text(value);
     },
     themeCssClass: function (id) {
       return this.pluginId + '-theme-' + id;

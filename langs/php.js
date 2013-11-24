@@ -6,6 +6,9 @@ define([
   return defaultLang.extend({
     info: {
       name: 'PHP'
+    },
+    elements: {
+      tag: /<\?php\b|<\?|\?>/
     }
   });
 });

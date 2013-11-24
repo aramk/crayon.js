@@ -36,13 +36,6 @@ define([
         if (lang) {
           df.resolve(lang);
         } else {
-          // TODO requested URL needs to be configured
-//          $.getScript('langs/' + id + '.js', function (data, textStatus, jqxhr) {
-//            console.log(data); // Data returned
-//            console.log(textStatus); // Success
-//            console.log(jqxhr.status); // 200
-//          });
-
           require(['langs/' + id], function (lang) {
             Log.info('Language loaded', id, lang);
             me.addToCache(id, lang);
@@ -52,17 +45,6 @@ define([
             // TODO verify this is called in IE 6-8.
             df.resolve(null);
           });
-
-//          me.getScript('langs/' + id + '.js', {
-//            cache: me.options.lang.cache
-//          }).done(function (lang) {
-//                console.error('lang', lang);
-////                me.addToCache(id, lang);
-////                lang._compiled = null;
-////                df.resolve(lang);
-//              }).fail(function () {
-//                df.resolve(null);
-//              });
         }
         return df;
       },
@@ -73,7 +55,6 @@ define([
           cache: true,
           url: url
         }, options);
-        console.error('options', options);
         return $.ajax(options);
       },
 
@@ -154,9 +135,9 @@ define([
           atts: parsedAtts
         };
         Log.info('Attributes for node', this.element, parsedAtts);
-        me.compile(me.options.getValue(node), parsedAtts).then(function (output) {
+        me.compile(me.options.getTextValue(node), parsedAtts).then(function (output) {
           if (output && output.length) {
-            me.options.setValue(node, output);
+            me.options.setHtmlValue(node, output);
           }
           $node.addClass(me.options.pluginId);
           var themeId = parsedAtts.theme || me.options.defaultThemeId;
@@ -167,8 +148,9 @@ define([
     },
 
     // TODO rename to parse or highlight?
+    // TODO assumes value has entities decoded.
     compile: function (value, atts) {
-      var output = '', df = $.Deferred();;
+      var output = '', df = $.Deferred();
       this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
         if (!lang) {
           df.resolve(null);
@@ -189,7 +171,7 @@ define([
             var element = lang._elementsArray[matchIndex - 1];
             var matchValue = value.slice(matches.index, matches.index + matches[0].length);
             // Copy preceding value.
-            output += value.slice(origIndex, matches.index);
+            output += lang.encodeEntities(value.slice(origIndex, matches.index));
             origIndex = matches.index + matchValue.length;
             // Delegate transformation to language.
             output += lang.transform(matchValue, {
@@ -208,7 +190,7 @@ define([
           lastMatchIndex = matches.index;
         }
         // Copy remaining value.
-        output += value.slice(origIndex, value.length);
+        output += lang.encodeEntities(value.slice(origIndex, value.length));
         df.resolve(output);
       });
       return df;
