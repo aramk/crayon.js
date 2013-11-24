@@ -3,7 +3,7 @@ define([
   'jquery', // src/jquery.js,
   'defaults',
   'langs/default', // TODO put in separate class
-  'utility/Log'
+  'utility/Log' // TODO prefix with "crayon"
 ], function (module, $, defaults, defaultLang, Log) {
 
   function Crayon(element, options) {
@@ -37,15 +37,32 @@ define([
           df.resolve(lang);
         } else {
           // TODO requested URL needs to be configured
-          me.getScript(id, {
-            cache: me.options.lang.cache
-          }).done(function (lang) {
-                me.addToCache(id, lang);
-                lang._compiled = null;
-                df.resolve(lang);
-              }).fail(function () {
-                df.resolve(null);
-              });
+//          $.getScript('langs/' + id + '.js', function (data, textStatus, jqxhr) {
+//            console.log(data); // Data returned
+//            console.log(textStatus); // Success
+//            console.log(jqxhr.status); // 200
+//          });
+
+          require(['langs/' + id], function (lang) {
+            Log.info('Language loaded', id, lang);
+            me.addToCache(id, lang);
+            lang._compiled = null;
+            df.resolve(lang);
+          }, function (err) {
+            // TODO verify this is called in IE 6-8.
+            df.resolve(null);
+          });
+
+//          me.getScript('langs/' + id + '.js', {
+//            cache: me.options.lang.cache
+//          }).done(function (lang) {
+//                console.error('lang', lang);
+////                me.addToCache(id, lang);
+////                lang._compiled = null;
+////                df.resolve(lang);
+//              }).fail(function () {
+//                df.resolve(null);
+//              });
         }
         return df;
       },
@@ -56,6 +73,7 @@ define([
           cache: true,
           url: url
         }, options);
+        console.error('options', options);
         return $.ajax(options);
       },
 
@@ -72,9 +90,11 @@ define([
           if (lang) {
             if (!lang._compiled) {
               lang._compiled = lang.compile(lang);
+              Log.info('Compiled language', id, lang);
             }
             df.resolve(lang, lang._compiled);
           } else {
+            !lang && Log.error('Could not compile language', id);
             df.resolve(null);
           }
         });
@@ -134,28 +154,28 @@ define([
           atts: parsedAtts
         };
         Log.info('Attributes for node', this.element, parsedAtts);
-        var output = me.compile(me.options.getValue(node), parsedAtts);
-        if (output && output.length) {
-          me.options.setValue(node, output);
-        }
-        $node.addClass(me.options.pluginId);
-        var themeId = parsedAtts.theme || me.options.defaultThemeId;
-        me.themes.load(themeId);
-        $node.addClass(me.options.themeCssClass(themeId));
-        $node.html(output);
+        me.compile(me.options.getValue(node), parsedAtts).then(function (output) {
+          if (output && output.length) {
+            me.options.setValue(node, output);
+          }
+          $node.addClass(me.options.pluginId);
+          var themeId = parsedAtts.theme || me.options.defaultThemeId;
+          me.themes.load(themeId);
+          $node.addClass(me.options.themeCssClass(themeId));
+        });
       });
     },
 
     // TODO rename to parse or highlight?
     compile: function (value, atts) {
-      var output = '';
+      var output = '', df = $.Deferred();;
       this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
         if (!lang) {
-          Log.error('Could not compile', atts.lang);
-          return null;
+          df.resolve(null);
+          return;
         }
+        output = '';
         value = lang.preTransform(value);
-        Log.info('Compiled language', lang);
         // TODO refactor this into a single place and avoid infinite loops
         var matches;
         // Current position in original value.
@@ -189,8 +209,9 @@ define([
         }
         // Copy remaining value.
         output += value.slice(origIndex, value.length);
+        df.resolve(output);
       });
-      return output;
+      return df;
     }
 
   };
