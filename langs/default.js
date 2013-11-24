@@ -2,8 +2,9 @@
 // TODO if this is minified we should still be allowed to pass options to override it - since the minified code can't be modified
 
 define([
+  'jquery',
   'utility/Log'
-], function (Log) {
+], function (jquery, Log) {
   // TODO we need to extend this for other languages and override
   var lang = {
     info: {
@@ -32,6 +33,9 @@ define([
     cssPrefix: 'crayon', // TODO repeat of pluginId in defaults, load from there?
     // Stores a list of the elements used during compilation. The order allows us to determine which group was matched.
     _elementsArray: null,
+    extend: function (lang) {
+      return $.extend({}, this, lang);
+    },
     regex: {
       // Whether to compile each element regex string into a RegExp object. Helps find invalid regexes.
       debug: true,
