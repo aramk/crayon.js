@@ -6,7 +6,6 @@ define([
 ], function (module, $, defaults, defaultLang) {
 
   function Crayon(element, options) {
-    console.error('construct');
     this.element = element;
     this.options = $.extend({}, defaults, options);
     this.init();
@@ -23,7 +22,7 @@ define([
       options: null,
 
       init: function (options) {
-        this.options = options;
+        this.options = options || {};
         this._cache = {};
         this.addToCache(options.defaultLangId, defaultLang);
       },
@@ -37,8 +36,17 @@ define([
           df.resolve(lang);
         } else {
           // TODO use require() instead
-          $.getScript(id)
-              .done(function (lang) {
+//          if (me.options.lang.cache) {
+//            $.ajaxSetup({
+//              cache: true
+//            });
+//          }
+
+          // TODO requested URL needs to be configured
+//          $.getScript(id)
+          me.getScript(id, {
+            cache: me.options.lang.cache
+          }).done(function (lang) {
                 me.addToCache(id, lang);
                 lang._compiled = null;
                 df.resolve(lang);
@@ -47,6 +55,19 @@ define([
               });
         }
         return df;
+      },
+
+      getScript: function (url, options) {
+        // Allow user to set any option except for dataType, cache, and url
+        options = $.extend({
+          dataType: 'script',
+          cache: true,
+          url: url
+        }, options);
+        console.error('options', options);
+        // Use $.ajax() since it is more flexible than $.getScript
+        // Return the jqXHR object so we can chain callbacks
+        return $.ajax(options);
       },
 
       addToCache: function (id, lang) {
@@ -59,10 +80,14 @@ define([
         var df = $.Deferred();
         id = id || options.defaultLangId;
         this.get(id).then(function (lang) {
-          if (!lang._compiled) {
-            lang._compiled = lang.compile(lang);
+          if (lang) {
+            if (!lang._compiled) {
+              lang._compiled = lang.compile(lang);
+            }
+            df.resolve(lang, lang._compiled);
+          } else {
+            df.resolve(null);
           }
-          df.resolve(lang, lang._compiled);
         });
         return df;
       }
@@ -137,6 +162,10 @@ define([
     compile: function (value, atts) {
       var output = '';
       this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
+        if (!lang) {
+          console.error('Could not compile');
+          return null;
+        }
         value = lang.preTransform(value);
         console.error('lang', lang, regex, value);
         // TODO refactor this into a single place and avoid infinite loops

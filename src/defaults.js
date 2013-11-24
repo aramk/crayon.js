@@ -17,7 +17,8 @@ define([
     lang: {
       // Accepts 'spaces', 'tabs' or null to prevent transforming.
       indent: 'spaces',
-      spacesInTab: 4
+      spacesInTab: 4,
+      cache: true
     },
     // Methods
     attrParser: function (attStr) {
@@ -28,7 +29,7 @@ define([
       return atts;
     },
     getValue: function (pre) {
-      return $(pre).html();
+      return $(pre).text();
     },
     setValue: function (pre, value) {
       $(pre).html(value);
