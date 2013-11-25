@@ -32,9 +32,10 @@ define([
     },
     cssPrefix: 'crayon', // TODO repeat of pluginId in defaults, load from there?
     // Stores a list of the elements used during compilation. The order allows us to determine which group was matched.
-    _elementsArray: null,
+    _elementsArray: [],
     extend: function (lang) {
-      return $.extend($.extend(true, {}, this), lang);
+      // Clone this language and deep merge the given one into it.
+      return $.extend(true, $.extend(true, {}, this), lang);
     },
     regex: {
       // Whether to compile each element regex string into a RegExp object. Helps find invalid regexes.
@@ -106,35 +107,30 @@ define([
       escape: function (str) {
         return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
       },
-      transform: function (element, callback) {
-        return callback(this[element]);
+      addAlt: function (regex, altRegex) {
+        return '(' + lang.compileElem(null, regex) + ')|' + '(' + lang.compileElem(null, altRegex) + ')';
+      },
+      concat: function () {
+        var element = arguments[0];
+        var clone = element instanceof Array ? element.slice() : [];
+        for (var i = 1; i < arguments.length; i++) {
+          var arg = arguments[i];
+          for (var j = 0; j < arg.length; j++) {
+            clone.push(arg[j]);
+          }
+        }
+        return clone;
       }
     },
-    compile: function (me) { // TODO remove me arg
-      var regexStr = '';
+    compile: function () { // TODO remove me arg
+      var regexStr = '', me = this;
       me._elementsArray = [];
       for (var id in me.elements) {
         // TODO rather than remove groups, change algorithm to allow them for more complex regex with functions in elements
         var elem = me.elements[id];
         if (elem) {
-          me._elementsArray.push(id);
-          if (elem instanceof Array) {
-            elem = me.regex.alternation(elem);
-          } else if (elem instanceof Function) {
-            elem = elem(me, id);
-          } else if (elem instanceof Object && !(elem instanceof RegExp)) {
-            // TODO avoided using getTypeOf, might be slower
-            elem = me.regex.alternation(elem.items, elem.wordBounded);
-          }
-          elem = elem instanceof RegExp ? elem.source : elem;
-          elem = elem.toString();
-//          elem = elem.substring(1, elem.length - 1);
-          elem = me.regex.expandBackrefs(elem);
-          elem = me.regex.removeGroups(elem);
-          if (me.debug) {
-            elem = new RegExp(elem);
-          }
-          regexStr += '(' + elem.toString() + ')|';
+          elem = this.compileElem(id, elem);
+          regexStr += '(' + elem + ')|';
         }
       }
       if (regexStr.length) {
@@ -144,6 +140,28 @@ define([
         Log.error('No elements compiled', me);
       }
       return new RegExp(regexStr, 'gmi');
+    },
+    compileElem: function (id, elem) {
+      var me = this;
+      id && me._elementsArray.push(id);
+      if (elem === null || typeof elem === 'undefined') {
+        return null;
+      } else if (elem instanceof Array) {
+        elem = me.regex.alternation(elem);
+      } else if (elem instanceof Function) {
+        elem = elem(me, id);
+      } else if (elem instanceof Object && !(elem instanceof RegExp)) {
+        // TODO avoided using getTypeOf, might be slower
+        elem = me.regex.alternation(elem.items, elem.wordBounded);
+      }
+      elem = elem instanceof RegExp ? elem.source : elem;
+      elem = elem.toString();
+      elem = me.regex.expandBackrefs(elem);
+      elem = me.regex.removeGroups(elem);
+      if (me.debug) {
+        elem = new RegExp(elem);
+      }
+      return elem.toString();
     },
     spacesInTabString: function () {
       return new Array(this.spacesInTab).join(' ');

@@ -70,7 +70,7 @@ define([
         this.get(id).then(function (lang) {
           if (lang) {
             if (!lang._compiled) {
-              lang._compiled = lang.compile(lang);
+              lang._compiled = lang.compile();
               Log.info('Compiled language', id, lang);
             }
             df.resolve(lang, lang._compiled);
