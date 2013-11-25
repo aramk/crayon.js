@@ -75,7 +75,7 @@ define([
             }
             df.resolve(lang, lang._compiled);
           } else {
-            !lang && Log.error('Could not compile language', id);
+            !lang && Log.error('Could not load language', id);
             df.resolve(null);
           }
         });

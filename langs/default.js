@@ -34,7 +34,7 @@ define([
     // Stores a list of the elements used during compilation. The order allows us to determine which group was matched.
     _elementsArray: null,
     extend: function (lang) {
-      return $.extend({}, this, lang);
+      return $.extend($.extend(true, {}, this), lang);
     },
     regex: {
       // Whether to compile each element regex string into a RegExp object. Helps find invalid regexes.
@@ -105,6 +105,9 @@ define([
       },
       escape: function (str) {
         return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      },
+      transform: function (element, callback) {
+        return callback(this[element]);
       }
     },
     compile: function (me) { // TODO remove me arg
@@ -117,12 +120,15 @@ define([
           me._elementsArray.push(id);
           if (elem instanceof Array) {
             elem = me.regex.alternation(elem);
+          } else if (elem instanceof Function) {
+            elem = elem(me, id);
           } else if (elem instanceof Object && !(elem instanceof RegExp)) {
             // TODO avoided using getTypeOf, might be slower
             elem = me.regex.alternation(elem.items, elem.wordBounded);
           }
+          elem = elem instanceof RegExp ? elem.source : elem;
           elem = elem.toString();
-          elem = elem.substring(1, elem.length - 1);
+//          elem = elem.substring(1, elem.length - 1);
           elem = me.regex.expandBackrefs(elem);
           elem = me.regex.removeGroups(elem);
           if (me.debug) {
