@@ -4,7 +4,7 @@
 define([
   'jquery',
   'utility/Log'
-], function (jquery, Log) {
+], function ($, Log) {
   // TODO we need to extend this for other languages and override
   var lang = {
     info: {
@@ -42,8 +42,9 @@ define([
       debug: true,
       backref: /\\(\d)\b/g,
       // TODO this isn't perfect, doesn't check that ( is not escaped.
-      group: /\(.*?[^\\]\)/g,
-      groupRemove: /((?:[^\\]|^)\((?!\?))/g,
+      _group: /\(.*?[^\\]\)/g,
+      _groupRemove: /((?:[^\\]|^)\((?!\?))/g,
+      _dotReplace: /([^\\]|^)\./g,
       expandBackrefs: function (regexStr) {
         var backrefMatches = this.matchAll(this.backref, regexStr);
         var backrefs = {};
@@ -51,7 +52,7 @@ define([
           for (var i = 0; i < backrefMatches.length; i++) {
             backrefs[parseInt(backrefMatches[i][1])] = backrefMatches[i][0];
           }
-          var groups = regexStr.match(this.group);
+          var groups = regexStr.match(this._group);
           for (var groupId in backrefs) {
             var group = groups[groupId - 1];
             regexStr = regexStr.replace(backrefs[groupId], group);
@@ -60,7 +61,16 @@ define([
         return regexStr;
       },
       removeGroups: function (regexStr) {
-        return regexStr.replace(this.groupRemove, '$1?:');
+        return regexStr.replace(this._groupRemove, '$1?:');
+      },
+      /**
+       * JavaScript doesn't have the \s modifier to allow dots capturing whitespace, so this
+       * replaces all unescaped dots to be changed to [\s|S].
+       * @param regexStr The original regex.
+       * @returns {String} The resulting regex.
+       */
+      replaceDots: function (regexStr) {
+        return regexStr.replace(this._dotReplace, '$1[\\s\\S]');
       },
       // TODO put in utils
       regexToString: function (re) {
@@ -108,7 +118,7 @@ define([
         return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
       },
       addAlt: function (regex, altRegex) {
-        return '(' + lang.compileElem(null, regex) + ')|' + '(' + lang.compileElem(null, altRegex) + ')';
+        return '(' + lang.compileElem(null, regex) + ')|(' + lang.compileElem(null, altRegex) + ')';
       },
       concat: function () {
         var element = arguments[0];
@@ -158,6 +168,7 @@ define([
       elem = elem.toString();
       elem = me.regex.expandBackrefs(elem);
       elem = me.regex.removeGroups(elem);
+      elem = me.regex.replaceDots(elem);
       if (me.debug) {
         elem = new RegExp(elem);
       }
