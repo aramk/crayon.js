@@ -97,7 +97,7 @@ define([
         // TODO convert "(?<!a)b" -> "[^a]b" but only works for a single character
         // TODO see http://stackoverflow.com/questions/641407/javascript-negative-lookbehind-equivalent
       },
-      alternation: function (array, wordBounded) {
+      alt: function (array, wordBounded) {
         wordBounded = typeof wordBounded == 'undefined' ? true : wordBounded;
         array.sort(function (a, b) {
           // Reverse sort the array of strings.
@@ -130,6 +130,13 @@ define([
           }
         }
         return clone;
+      },
+      // Convenience methods.
+      add: function (existing, regex) {
+        var me = this;
+        return function () {
+          return me.addAlt(existing, regex);
+        };
       }
     },
     compile: function () { // TODO remove me arg
@@ -157,12 +164,12 @@ define([
       if (elem === null || typeof elem === 'undefined') {
         return null;
       } else if (elem instanceof Array) {
-        elem = me.regex.alternation(elem);
+        elem = me.regex.alt(elem);
       } else if (elem instanceof Function) {
         elem = elem(me, id);
       } else if (elem instanceof Object && !(elem instanceof RegExp)) {
         // TODO avoided using getTypeOf, might be slower
-        elem = me.regex.alternation(elem.items, elem.wordBounded);
+        elem = me.regex.alt(elem.items, elem.wordBounded);
       }
       elem = elem instanceof RegExp ? elem.source : elem;
       elem = elem.toString();
@@ -199,7 +206,7 @@ define([
           .replace(/&gt;/g, '>')
           .replace(/&amp;/g, '&');
     },
-    preTransform: function (value) {
+    transformIndent: function (value) {
       if (this.indent == 'spaces') {
         value = this.convertTabs(value);
       } else if (this.indent == 'tabs') {

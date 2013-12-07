@@ -157,7 +157,7 @@ define([
           return;
         }
         output = '';
-        value = lang.preTransform(value);
+        value = lang.transformIndent(value);
         // TODO refactor this into a single place and avoid infinite loops
         var matches;
         // Current position in original value.
