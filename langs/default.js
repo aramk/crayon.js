@@ -4,36 +4,16 @@
 define([
   'jquery',
   'utility/Log'
-], function ($, Log) {
+], function($, Log) {
   // TODO we need to extend this for other languages and override
   var lang = {
     info: {
       name: 'Default'
     },
-    elements: {
-      comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
-      preprocessor: /(#.*?$)/,
-      tag: null,
-      string: /(["']).*?([^\\]|^)(["'])/, // TODO this matches the first character, we should ignore it,
-      keyword: null,
-      statement: ['enddeclare', 'endforeach', 'endswitch', 'continue', 'endwhile', 'foreach', 'finally', 'default', 'elseif', 'endfor', 'return', 'switch', 'assert', 'break', 'catch', 'endif', 'throw', 'while', 'then', 'case', 'else', 'goto', 'each', 'and', 'for', 'try', 'use', 'xor', 'and', 'not', 'end', 'as', 'do', 'if', 'or', 'in', 'is', 'to'],
-      reserved: ['implements', 'instanceof', 'declare', 'default', 'extends', 'typedef', 'parent', 'super', 'child', 'clone', 'self', 'this', 'new'],
-      type: ['cfunction', 'interface', 'namespace', 'function', 'unsigned', 'boolean', 'integer', 'package', 'double', 'struct', 'string', 'signed', 'object', 'class', 'array', 'float', 'short', 'false', 'char', 'long', 'void', 'word', 'byte', 'bool', 'null', 'true', 'enum', 'var', 'int'],
-      modifier: ['protected', 'abstract', 'property', 'private', 'global', 'public', 'static', 'native', 'const', 'final'],
-      entity: /(\b[a-z_]\w*\b(?=\s*\([^\)]*\)))|(\b[a-z_]\w+\b\s+(?=\b[a-z_]\w+\b))/,
-      variable: /([A-Za-z_]\w*(?=\s*[=\[\.]))/, // TODO this can cause inconsistencies
-      identifier: /\b[A-Za-z_]\w*\b/,
-      constant: /\b[0-9][\.\w]*/,
-      operator: {
-        items: ['=&', '<<<', '>>>', '<<', '>>', '<<=', '=>>', '!==', '!=', '^=', '*=', '&=', '%=', '|=', '/=', '===', '==', '<>', '->', '<=', '>=', '++', '--', '&&', '||', '::', '#', '+', '-', '*', '/', '%', '=', '&', '|', '^', '~', '!', '<', '>', ':'],
-        wordBounded: false
-      },
-      symbol: ['~', '`', '!', '@', '#', '$', '%', '(', ')', '_', '{', '}', '[', ']', '|', '\\', ':', ';', ',', '.', '?']
-    },
     cssPrefix: 'crayon', // TODO repeat of pluginId in defaults, load from there?
     // Stores a list of the elements used during compilation. The order allows us to determine which group was matched.
     _elementsArray: [],
-    extend: function (lang) {
+    extend: function(lang) {
       // Clone this language and deep merge the given one into it.
       return $.extend(true, $.extend(true, {}, this), lang);
     },
@@ -45,7 +25,7 @@ define([
       _group: /\(.*?[^\\]\)/g,
       _groupRemove: /((?:[^\\]|^)\((?!\?))/g,
       _dotReplace: /([^\\]|^)\./g,
-      expandBackrefs: function (regexStr) {
+      expandBackrefs: function(regexStr) {
         var backrefMatches = this.matchAll(this.backref, regexStr);
         var backrefs = {};
         if (backrefMatches.length) {
@@ -60,7 +40,7 @@ define([
         }
         return regexStr;
       },
-      removeGroups: function (regexStr) {
+      removeGroups: function(regexStr) {
         return regexStr.replace(this._groupRemove, '$1?:');
       },
       /**
@@ -69,15 +49,15 @@ define([
        * @param regexStr The original regex.
        * @returns {String} The resulting regex.
        */
-      replaceDots: function (regexStr) {
+      replaceDots: function(regexStr) {
         return regexStr.replace(this._dotReplace, '$1[\\s\\S]');
       },
       // TODO put in utils
-      regexToString: function (re) {
+      regexToString: function(re) {
         var str = re.toString().replace(/\\/g, '\\\\');
         return str.substring(1, str.length - 1);
       },
-      matchAll: function (regex, string) {
+      matchAll: function(regex, string) {
         var match = null, matches = [];
         while (match = regex.exec(string)) {
           var matchArray = [];
@@ -92,54 +72,52 @@ define([
         return matches;
       },
 //      _reLookbehind: //g,
-      convertLookbehinds: function () {
+      convertLookbehinds: function() {
         // TODO needs some more thought
         // TODO convert "(?<!a)b" -> "[^a]b" but only works for a single character
         // TODO see http://stackoverflow.com/questions/641407/javascript-negative-lookbehind-equivalent
       },
-      alt: function (array, wordBounded) {
-        wordBounded = typeof wordBounded == 'undefined' ? true : wordBounded;
-        array.sort(function (a, b) {
+      argsArray: function(args) {
+        return args instanceof Array ? args : arguments.slice();
+      },
+      alt: function(array, wordBounded) {
+        array = this.argsArray.apply(this, arguments);
+        console.error('array', array);
+        wordBounded = wordBounded === true;
+        array.sort(function(a, b) {
           // Reverse sort the array of strings.
           return a.length < b.length ? 1 : (a.length > b.length ? -1 : 0);
         });
         var me = this;
         var cleaned = [];
-        array.forEach(function (item) {
+        array.forEach(function(item) {
           // Escape regex characters.
           item = me.escape(item);
           item.length && cleaned.push(item);
         });
         var regex = cleaned.join('|');
-        regex = wordBounded ? '\\b(' + regex + ')\\b' : regex;
-        return new RegExp(regex);
+        return wordBounded ? '\\b(' + regex + ')\\b' : '(' + regex + ')';
       },
-      escape: function (str) {
+      escape: function(str) {
         return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
       },
-      addAlt: function (regex, altRegex) {
-        return '(' + lang.compileElem(null, regex) + ')|(' + lang.compileElem(null, altRegex) + ')';
-      },
-      concat: function () {
-        var element = arguments[0];
-        var clone = element instanceof Array ? element.slice() : [];
-        for (var i = 1; i < arguments.length; i++) {
-          var arg = arguments[i];
-          for (var j = 0; j < arg.length; j++) {
-            clone.push(arg[j]);
-          }
-        }
-        return clone;
-      },
       // Convenience methods.
-      add: function (existing, regex) {
-        var me = this;
-        return function () {
-          return me.addAlt(existing, regex);
-        };
-      }
+      words: function(array) {
+        array = this.argsArray.apply(this, arguments);
+        return this.alt(array, true);
+      },
+//      add: function (array) {
+//        array = this.argsArray.apply(this, arguments);
+//        var me = this;
+//        return function () {
+//          for (var i = 1; i < arguments.length; i++) {
+//            existing = me.addAlt(existing, arguments[i]);
+//          }
+//          return existing;
+//        };
+//      }
     },
-    compile: function () { // TODO remove me arg
+    compile: function() { // TODO remove me arg
       var regexStr = '', me = this;
       me._elementsArray = [];
       for (var id in me.elements) {
@@ -158,7 +136,7 @@ define([
       }
       return new RegExp(regexStr, 'gmi');
     },
-    compileElem: function (id, elem) {
+    compileElem: function(id, elem) {
       var me = this;
       id && me._elementsArray.push(id);
       if (elem === null || typeof elem === 'undefined') {
@@ -181,16 +159,16 @@ define([
       }
       return elem.toString();
     },
-    spacesInTabString: function () {
+    spacesInTabString: function() {
       return new Array(this.spacesInTab).join(' ');
     },
-    convertTabs: function (value) {
+    convertTabs: function(value) {
       return value.replace(/\t/g, this.spacesInTabString());
     },
-    convertSpaces: function (value) {
+    convertSpaces: function(value) {
       return value.replace(this.spacesInTabString(), '\\t');
     },
-    encodeEntities: function (value) {
+    encodeEntities: function(value) {
       return String(value)
           .replace(/&/g, '&amp;')
           .replace(/"/g, '&quot;')
@@ -198,7 +176,7 @@ define([
           .replace(/</g, '&lt;')
           .replace(/>/g, '&gt;');
     },
-    decodeEntities: function (value) {
+    decodeEntities: function(value) {
       return String(value)
           .replace(/&quot;/g, '"')
           .replace(/&#39;/g, "'")
@@ -206,7 +184,7 @@ define([
           .replace(/&gt;/g, '>')
           .replace(/&amp;/g, '&');
     },
-    transformIndent: function (value) {
+    transformIndent: function(value) {
       if (this.indent == 'spaces') {
         value = this.convertTabs(value);
       } else if (this.indent == 'tabs') {
@@ -215,11 +193,11 @@ define([
       return value;
     },
     // TODO use better name for value variable
-    transform: function (matchValue, args) {
+    transform: function(matchValue, args) {
       matchValue = this.encodeEntities(matchValue);
       return '<span class="' + lang.cssPrefix + '-' + args.element + '">' + matchValue + '</span>';
     },
-    getMatchIndex: function (matches) {
+    getMatchIndex: function(matches) {
       if (matches.length > 1) {
         for (var i = 1; i < matches.length; i++) {
           var match = matches[i];
@@ -231,9 +209,29 @@ define([
       return null;
     },
     // TODO add to util, might also be too slow to use?
-    getTypeOf: function (/*anything*/ object) {
+    getTypeOf: function(/*anything*/ object) {
       return Object.prototype.toString.call(object).slice(8, -1);
     }
   };
+
+  var re = lang.regex;
+  lang.elements = {
+    comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
+    preprocessor: /(#.*?$)/,
+    tag: null,
+    string: /(["']).*?([^\\]|^)(["'])/, // TODO this matches the first character, we should ignore it,
+    keyword: null,
+    statement: re.words(['enddeclare', 'endforeach', 'endswitch', 'continue', 'endwhile', 'foreach', 'finally', 'default', 'elseif', 'endfor', 'return', 'switch', 'assert', 'break', 'catch', 'endif', 'throw', 'while', 'then', 'case', 'else', 'goto', 'each', 'and', 'for', 'try', 'use', 'xor', 'and', 'not', 'end', 'as', 'do', 'if', 'or', 'in', 'is', 'to']),
+    reserved: re.words(['implements', 'instanceof', 'declare', 'default', 'extends', 'typedef', 'parent', 'super', 'child', 'clone', 'self', 'this', 'new']),
+    type: re.words(['cfunction', 'interface', 'namespace', 'function', 'unsigned', 'boolean', 'integer', 'package', 'double', 'struct', 'string', 'signed', 'object', 'class', 'array', 'float', 'short', 'false', 'char', 'long', 'void', 'word', 'byte', 'bool', 'null', 'true', 'enum', 'var', 'int']),
+    modifier: re.words(['protected', 'abstract', 'property', 'private', 'global', 'public', 'static', 'native', 'const', 'final']),
+    entity: /(\b[a-z_]\w*\b(?=\s*\([^\)]*\)))|(\b[a-z_]\w+\b\s+(?=\b[a-z_]\w+\b))/,
+    variable: /([A-Za-z_]\w*(?=\s*[=\[\.]))/, // TODO this can cause inconsistencies
+    identifier: /\b[A-Za-z_]\w*\b/,
+    constant: /\b[0-9][\.\w]*/,
+    operator: ['=&', '<<<', '>>>', '<<', '>>', '<<=', '=>>', '!==', '!=', '^=', '*=', '&=', '%=', '|=', '/=', '===', '==', '<>', '->', '<=', '>=', '++', '--', '&&', '||', '::', '#', '+', '-', '*', '/', '%', '=', '&', '|', '^', '~', '!', '<', '>', ':'],
+    symbol: ['~', '`', '!', '@', '#', '$', '%', '(', ')', '_', '{', '}', '[', ']', '|', '\\', ':', ';', ',', '.', '?']
+  };
+
   return lang;
 });
