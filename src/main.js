@@ -1,8 +1,6 @@
 // RequireJS not used to ensure plugin is usable synchronously
 (function ($, window, document, undefined) {
 
-//  console.error('require', require);
-
   require.config({
     baseUrl: 'src',
     packages: [

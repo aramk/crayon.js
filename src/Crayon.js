@@ -43,7 +43,7 @@ define([
             df.resolve(lang);
           }, function (err) {
             // TODO verify this is called in IE 6-8.
-            df.resolve(null);
+            df.reject(err);
           });
         }
         return df;
@@ -68,16 +68,14 @@ define([
         var df = $.Deferred();
         id = id || options.defaultLangId;
         this.get(id).then(function (lang) {
-          if (lang) {
-            if (!lang._compiled) {
-              lang._compiled = lang.compile();
-              Log.info('Compiled language', id, lang);
-            }
-            df.resolve(lang, lang._compiled);
-          } else {
-            !lang && Log.error('Could not load language', id);
-            df.resolve(null);
+          if (!lang._compiled) {
+            lang._compiled = lang.compile();
+            Log.info('Compiled language', id, lang);
           }
+          df.resolve(lang, lang._compiled);
+        }, function (err) {
+          Log.error('Could not load language', id);
+          df.reject(err);
         });
         return df;
       }
@@ -138,11 +136,16 @@ define([
         me.compile(me.options.getTextValue(node), parsedAtts).then(function (output) {
           if (output && output.length) {
             me.options.setHtmlValue(node, output);
+          } else {
+            Log.error('Compilation returned no output', output);
           }
           $node.addClass(me.options.pluginId);
           var themeId = parsedAtts.theme || me.options.defaultThemeId;
           me.themes.load(themeId);
           $node.addClass(me.options.themeCssClass(themeId));
+        }, function (err) {
+          // TODO(aramk) handle this better?
+          throw err;
         });
       });
     },
@@ -152,10 +155,6 @@ define([
     compile: function (value, atts) {
       var output = '', df = $.Deferred();
       this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
-        if (!lang) {
-          df.resolve(null);
-          return;
-        }
         output = '';
         value = lang.transformIndent(value);
         // TODO refactor this into a single place and avoid infinite loops
@@ -192,6 +191,8 @@ define([
         // Copy remaining value.
         output += lang.encodeEntities(value.slice(origIndex, value.length));
         df.resolve(output);
+      }, function (err) {
+        df.reject(err);
       });
       return df;
     }

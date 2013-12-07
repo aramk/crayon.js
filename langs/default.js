@@ -78,12 +78,14 @@ define([
         // TODO see http://stackoverflow.com/questions/641407/javascript-negative-lookbehind-equivalent
       },
       argsArray: function(args) {
-        return args instanceof Array ? args : arguments.slice();
+        return args instanceof Array ? args : Array.prototype.slice.apply(arguments);
       },
-      alt: function(array, wordBounded) {
+      alt: function(array, isWords, escape) {
+        console.error('array', array, arguments);
         array = this.argsArray.apply(this, arguments);
         console.error('array', array);
-        wordBounded = wordBounded === true;
+        isWords = isWords === true;
+        escape = escape === undefined ? false : escape === true;
         array.sort(function(a, b) {
           // Reverse sort the array of strings.
           return a.length < b.length ? 1 : (a.length > b.length ? -1 : 0);
@@ -91,21 +93,29 @@ define([
         var me = this;
         var cleaned = [];
         array.forEach(function(item) {
-          // Escape regex characters.
-          item = me.escape(item);
-          item.length && cleaned.push(item);
+          if (isWords || escape) {
+            // Escape regex characters.
+            item = me.escape(item);
+          }
+          // Items can be undefined, ignore these.
+          item && item.length && cleaned.push(item);
         });
         var regex = cleaned.join('|');
-        return wordBounded ? '\\b(' + regex + ')\\b' : '(' + regex + ')';
+        return isWords ? '\\b(' + regex + ')\\b' : '(' + regex + ')';
       },
       escape: function(str) {
+        str = str instanceof RegExp ? str.source : str;
         return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
       },
       // Convenience methods.
       words: function(array) {
         array = this.argsArray.apply(this, arguments);
-        return this.alt(array, true);
+        return this.alt(array, true, true);
       },
+      esc: function (array) {
+        array = this.argsArray.apply(this, arguments);
+        return this.alt(array, false, true);
+      }
 //      add: function (array) {
 //        array = this.argsArray.apply(this, arguments);
 //        var me = this;
@@ -229,8 +239,8 @@ define([
     variable: /([A-Za-z_]\w*(?=\s*[=\[\.]))/, // TODO this can cause inconsistencies
     identifier: /\b[A-Za-z_]\w*\b/,
     constant: /\b[0-9][\.\w]*/,
-    operator: ['=&', '<<<', '>>>', '<<', '>>', '<<=', '=>>', '!==', '!=', '^=', '*=', '&=', '%=', '|=', '/=', '===', '==', '<>', '->', '<=', '>=', '++', '--', '&&', '||', '::', '#', '+', '-', '*', '/', '%', '=', '&', '|', '^', '~', '!', '<', '>', ':'],
-    symbol: ['~', '`', '!', '@', '#', '$', '%', '(', ')', '_', '{', '}', '[', ']', '|', '\\', ':', ';', ',', '.', '?']
+    operator: re.esc(['=&', '<<<', '>>>', '<<', '>>', '<<=', '=>>', '!==', '!=', '^=', '*=', '&=', '%=', '|=', '/=', '===', '==', '<>', '->', '<=', '>=', '++', '--', '&&', '||', '::', '#', '+', '-', '*', '/', '%', '=', '&', '|', '^', '~', '!', '<', '>', ':']),
+    symbol: re.esc(['~', '`', '!', '@', '#', '$', '%', '(', ')', '_', '{', '}', '[', ']', '|', '\\', ':', ';', ',', '.', '?'])
   };
 
   return lang;
