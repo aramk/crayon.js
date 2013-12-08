@@ -7,7 +7,8 @@ define([
     info: {
       name: 'PHP'
     },
-    elements: {
+
+    elements: [{
       // TODO reduce boilerplate code.
       comment: re.alt(elem.comment, '\#.*?$'),
       string: re.alt(elem.string, '<<<EOT.*?^EOT'),
@@ -21,6 +22,6 @@ define([
 //        // TODO this doesn't work since we don't have inline modifiers. We need to separate this as another regex match and not use /i.
 //        return regex.altAlt(/(?-i)\b[A-Z_]*\b(?i)/, elements[id]);
 //      }
-    }
+    }]
   });
 });
