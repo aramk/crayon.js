@@ -1,5 +1,5 @@
 // RequireJS not used to ensure plugin is usable synchronously
-(function ($, window, document, undefined) {
+(function($, window, document, undefined) {
 
   require.config({
     baseUrl: 'src',
@@ -17,13 +17,13 @@
 
   // Instantiate the plugin for jQuery
   var name = 'crayon';
-  $.fn[name] = function (options) {
+  $.fn[name] = function(options) {
     var query = this;
-    return query.each(function () {
+    return query.each(function() {
       if (!$.data(this, 'plugin_' + name)) {
-        $.data(this, 'plugin_' + name, (function () {
+        $.data(this, 'plugin_' + name, (function() {
           // Note: This loads asynchronously
-          require(['Crayon'], function (Crayon) {
+          require(['Crayon'], function(Crayon) {
             options = $.extend(options, {
               // TODO how do we configure this?
               baseURL: ''

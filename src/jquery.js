@@ -1,4 +1,4 @@
 // Used by Almond to load jquery from a <script> tag
-define(function () {
+define(function() {
   return jQuery;
 });

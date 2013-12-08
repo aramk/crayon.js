@@ -1,6 +1,6 @@
 require([
   'jquery' // src/jquery.js
-], function ($) {
+], function($) {
 
   var defaults = {
 
@@ -12,7 +12,7 @@ require([
 
   Loader.prototype = {
 
-    init: function () {
+    init: function() {
 
     }
 

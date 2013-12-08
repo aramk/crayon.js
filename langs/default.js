@@ -79,7 +79,7 @@ define([
       argsArray: function(args) {
         return args instanceof Array ? args : Array.prototype.slice.apply(arguments);
       },
-      toStr: function (regex) {
+      toStr: function(regex) {
         return regex instanceof RegExp ? regex.source : regex.toString();
       },
       alt: function(array, escape) {
@@ -138,7 +138,7 @@ define([
     compile: function() { // TODO remove me arg
       var regexes = [], me = this;
       var elementsArray = me.elements instanceof Array ? me.elements : [me.elements];
-      $.each(elementsArray, function (_, elements) {
+      $.each(elementsArray, function(_, elements) {
         regexes.push(me.compileElements(elements));
       });
       return regexes;

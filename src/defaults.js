@@ -1,6 +1,6 @@
 define([
   'jquery'
-], function ($) {
+], function($) {
   return {
     // Strings
     pluginId: 'crayon',
@@ -21,29 +21,29 @@ define([
       cache: true
     },
     // Methods
-    attrParser: function (attStr) {
+    attrParser: function(attStr) {
       var match, atts = {};
       while ((match = this.reAttr.exec(attStr)) != null) {
         atts[match[1]] = match[2];
       }
       return atts;
     },
-    getHtmlValue: function (pre) {
+    getHtmlValue: function(pre) {
       return $(pre).html();
     },
-    getTextValue: function (pre) {
+    getTextValue: function(pre) {
       return $(pre).text();
     },
-    setHtmlValue: function (pre, value) {
+    setHtmlValue: function(pre, value) {
       $(pre).html(value);
     },
-    setTextValue: function (pre, value) {
+    setTextValue: function(pre, value) {
       $(pre).text(value);
     },
-    themeCssClass: function (id) {
+    themeCssClass: function(id) {
       return this.pluginId + '-theme-' + id;
     },
-    themeURL: function (id) {
+    themeURL: function(id) {
       return this.themeDir + '/' + id + '.css';
     }
   };

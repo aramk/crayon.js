@@ -4,7 +4,7 @@ define([
   'defaults',
   'langs/default', // TODO put in separate class
   'utility/Log' // TODO prefix with "crayon"
-], function (module, $, defaults, defaultLang, Log) {
+], function(module, $, defaults, defaultLang, Log) {
 
   function Crayon(element, options) {
     this.element = element;
@@ -23,25 +23,25 @@ define([
       // Options passed in on init.
       options: null,
 
-      init: function (options) {
+      init: function(options) {
         this.options = options || {};
         this._cache = {};
         this.addToCache(options.defaultLangId, defaultLang);
       },
 
-      get: function (id) {
+      get: function(id) {
         var me = this;
         var df = $.Deferred();
         var lang = this._cache[id];
         if (lang) {
           df.resolve(lang);
         } else {
-          require(['langs/' + id], function (lang) {
+          require(['langs/' + id], function(lang) {
             Log.info('Language loaded', id, lang);
             me.addToCache(id, lang);
             lang._compiled = null;
             df.resolve(lang);
-          }, function (err) {
+          }, function(err) {
             // TODO verify this is called in IE 6-8.
             df.reject(err);
           });
@@ -49,7 +49,7 @@ define([
         return df;
       },
 
-      getScript: function (url, options) {
+      getScript: function(url, options) {
         options = $.extend({
           dataType: 'script',
           cache: true,
@@ -58,22 +58,22 @@ define([
         return $.ajax(options);
       },
 
-      addToCache: function (id, lang) {
+      addToCache: function(id, lang) {
         this._cache[id] = lang;
         $.extend(lang, this.options.lang);
       },
 
-      compile: function (id, options) {
+      compile: function(id, options) {
         var me = this;
         var df = $.Deferred();
         id = id || options.defaultLangId;
-        this.get(id).then(function (lang) {
+        this.get(id).then(function(lang) {
           if (!lang._compiled) {
             lang._compiled = lang.compile();
             Log.info('Compiled language', id, lang);
           }
           df.resolve(lang, lang._compiled);
-        }, function (err) {
+        }, function(err) {
           Log.error('Could not load language', id);
           df.reject(err);
         });
@@ -84,7 +84,7 @@ define([
     // TODO move to separate file
     themes: {
       _cache: null,
-      init: function (options) {
+      init: function(options) {
         // TODO refactor this with the languages
         this.options = options;
         this._cache = {};
@@ -92,7 +92,7 @@ define([
         this._cache[options.defaultThemeId] = true;
       },
 
-      load: function (id) {
+      load: function(id) {
         var theme = this._cache[id];
         if (!theme) {
           var $css = $('<link rel="stylesheet" type="text/css">');
@@ -106,7 +106,7 @@ define([
       }
     },
 
-    init: function () {
+    init: function() {
       var me = this;
       me.themes.init(me.options);
       me.langs.init(me.options);
@@ -118,14 +118,14 @@ define([
      * @returns {?HTMLElement[]} The elements within the selected element which
      * match our selector for finding code.
      */
-    query: function () {
+    query: function() {
       return $(this.options.selector, this.element);
     },
 
     // TODO separate out code which manipulates or compiles
-    load: function (nodes) {
+    load: function(nodes) {
       var me = this;
-      nodes.each(function (i, node) {
+      nodes.each(function(i, node) {
         var $node = $(node);
         var atts = $(node).attr(me.options.attrSelector);
         var parsedAtts = me.options.attrParser(atts);
@@ -133,7 +133,7 @@ define([
           atts: parsedAtts
         };
         Log.info('Attributes for node', this.element, parsedAtts);
-        me.compile(me.options.getTextValue(node), parsedAtts).then(function (output) {
+        me.compile(me.options.getTextValue(node), parsedAtts).then(function(output) {
           if (output && output.length) {
             me.options.setHtmlValue(node, output);
           } else {
@@ -143,7 +143,7 @@ define([
           var themeId = parsedAtts.theme || me.options.defaultThemeId;
           me.themes.load(themeId);
           $node.addClass(me.options.themeCssClass(themeId));
-        }, function (err) {
+        }, function(err) {
           // TODO(aramk) handle this better?
           throw err;
         });
@@ -152,12 +152,12 @@ define([
 
     // TODO rename to parse or highlight?
     // TODO assumes value has entities decoded.
-    compile: function (input, atts) {
+    compile: function(input, atts) {
       var output = '', df = $.Deferred();
-      this.langs.compile(atts.lang, this.options).then(function (lang, regexes) {
+      this.langs.compile(atts.lang, this.options).then(function(lang, regexes) {
         input = lang.transformIndent(input);
         // TODO handle case of no regexes?
-        $.each(regexes, function (_, regex) {
+        $.each(regexes, function(_, regex) {
           // TODO refactor this into a single place and avoid infinite loops
           // Generated each loop from the input.
           output = '';
@@ -196,7 +196,7 @@ define([
           input = output;
         });
         df.resolve(output);
-      }, function (err) {
+      }, function(err) {
         df.reject(err);
       });
       return df;
