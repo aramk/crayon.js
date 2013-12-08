@@ -18,8 +18,7 @@ define([
       return $.extend(true, $.extend(true, {}, this), lang);
     },
     regex: {
-      // Whether to compile each element regex string into a RegExp object. Helps find invalid regexes.
-      debug: true,
+      modifiers: 'gmi',
       backref: /\\(\d)\b/g,
       // TODO this isn't perfect, doesn't check that ( is not escaped.
       _group: /\(.*?[^\\]\)/g,
@@ -137,13 +136,27 @@ define([
       }
     },
     compile: function() { // TODO remove me arg
+      var regexes = [], me = this;
+      var elementsArray = me.elements instanceof Array ? me.elements : [me.elements];
+      $.each(elementsArray, function (_, elements) {
+        regexes.push(me.compileElements(elements));
+      });
+      return regexes;
+    },
+    compileElements: function(elements) {
       var regexStr = '', me = this;
       me._elementsArray = [];
+      // TODO separate the logic from the data (language definition) while still allowing both to be overridden.
       for (var id in me.elements) {
+        if (id.match(/^_/)) {
+          // Ignore any elements with underscore prefix. These can be used to define modifiers for each set of elements.
+          continue;
+        }
         // TODO rather than remove groups, change algorithm to allow them for more complex regex with functions in elements
         var elem = me.elements[id];
         if (elem) {
-          elem = this.compileElem(id, elem);
+          elem = me.compileElement(id, elem);
+          id && me._elementsArray.push(id);
           regexStr += '(' + elem + ')|';
         }
       }
@@ -153,11 +166,11 @@ define([
       } else {
         Log.error('No elements compiled', me);
       }
-      return new RegExp(regexStr, 'gmi');
+      // TODO support more than one
+      return new RegExp(regexStr, elements._modifiers || me.regex.modifiers);
     },
-    compileElem: function(id, elem) {
+    compileElement: function(id, elem) {
       var me = this;
-      id && me._elementsArray.push(id);
       if (elem === null || typeof elem === 'undefined') {
         return null;
       } else if (elem instanceof Array) {
@@ -172,10 +185,7 @@ define([
       elem = me.regex.expandBackrefs(elem);
       elem = me.regex.removeGroups(elem);
       elem = me.regex.replaceDots(elem);
-      if (me.debug) {
-        elem = new RegExp(elem);
-      }
-      return elem.toString();
+      return (new RegExp(elem)).source;
     },
     spacesInTabString: function() {
       return new Array(this.spacesInTab).join(' ');

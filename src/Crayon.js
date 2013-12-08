@@ -152,44 +152,49 @@ define([
 
     // TODO rename to parse or highlight?
     // TODO assumes value has entities decoded.
-    compile: function (value, atts) {
+    compile: function (input, atts) {
       var output = '', df = $.Deferred();
-      this.langs.compile(atts.lang, this.options).then(function (lang, regex) {
-        output = '';
-        value = lang.transformIndent(value);
-        // TODO refactor this into a single place and avoid infinite loops
-        var matches;
-        // Current position in original value.
-        var origIndex = 0;
-        // TODO possible to replace with string.match()?
-        var lastMatchIndex = null;
-        while ((matches = regex.exec(value)) != null) {
-          // TODO better to avoid linear search...
-          var matchIndex = lang.getMatchIndex(matches);
-          if (matchIndex !== null) {
-            var element = lang._elementsArray[matchIndex - 1];
-            var matchValue = value.slice(matches.index, matches.index + matches[0].length);
-            // Copy preceding value.
-            output += lang.encodeEntities(value.slice(origIndex, matches.index));
-            origIndex = matches.index + matchValue.length;
-            // Delegate transformation to language.
-            output += lang.transform(matchValue, {
-              element: element,
-              value: value,
-              regex: regex,
-              matchIndex: matchIndex,
-              matches: matches
-            });
+      this.langs.compile(atts.lang, this.options).then(function (lang, regexes) {
+        input = lang.transformIndent(input);
+        // TODO handle case of no regexes?
+        $.each(regexes, function (_, regex) {
+          // TODO refactor this into a single place and avoid infinite loops
+          // Generated each loop from the input.
+          output = '';
+          var matches,
+              origIndex = 0, // Current position in original value.
+              lastMatchIndex = null; // TODO possible to replace with string.match()?
+          console.error('regex', regex);
+          while ((matches = regex.exec(input)) != null) {
+            // TODO better to avoid linear search...
+            var matchIndex = lang.getMatchIndex(matches);
+            if (matchIndex !== null) {
+              var element = lang._elementsArray[matchIndex - 1];
+              var matchValue = input.slice(matches.index, matches.index + matches[0].length);
+              // Copy preceding value.
+              output += lang.encodeEntities(input.slice(origIndex, matches.index));
+              origIndex = matches.index + matchValue.length;
+              // Delegate transformation to language.
+              output += lang.transform(matchValue, {
+                element: element,
+                value: input,
+                regex: regex,
+                matchIndex: matchIndex,
+                matches: matches
+              });
+            }
+            // Prevents infinite loops.
+            if (lastMatchIndex == matches.index) {
+              Log.warn('Match not found, aborting');
+              break;
+            }
+            lastMatchIndex = matches.index;
           }
-          // Prevents infinite loops.
-          if (lastMatchIndex == matches.index) {
-            Log.warn('Match not found, aborting');
-            break;
-          }
-          lastMatchIndex = matches.index;
-        }
-        // Copy remaining value.
-        output += lang.encodeEntities(value.slice(origIndex, value.length));
+          // Copy remaining value.
+          output += lang.encodeEntities(input.slice(origIndex, input.length));
+          // Allows repeating.
+          input = output;
+        });
         df.resolve(output);
       }, function (err) {
         df.reject(err);
