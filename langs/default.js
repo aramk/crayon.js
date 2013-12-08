@@ -80,52 +80,61 @@ define([
       argsArray: function(args) {
         return args instanceof Array ? args : Array.prototype.slice.apply(arguments);
       },
-      alt: function(array, isWords, escape) {
-        console.error('array', array, arguments);
+      toStr: function (regex) {
+        return regex instanceof RegExp ? regex.source : regex.toString();
+      },
+      alt: function(array, escape) {
+//        console.error('array in', array, arguments);
         array = this.argsArray.apply(this, arguments);
-        console.error('array', array);
-        isWords = isWords === true;
+//        console.error('array args', array);
         escape = escape === undefined ? false : escape === true;
-        array.sort(function(a, b) {
-          // Reverse sort the array of strings.
-          return a.length < b.length ? 1 : (a.length > b.length ? -1 : 0);
-        });
+        this.altSort(array);
+//        console.error('array sorted', array);
         var me = this;
         var cleaned = [];
         array.forEach(function(item) {
-          if (isWords || escape) {
-            // Escape regex characters.
-            item = me.escape(item);
-          }
           // Items can be undefined, ignore these.
-          item && item.length && cleaned.push(item);
+          if (item) {
+            // TODO we could prevent RegExp from being escaped, but this would make the API confusing.
+            item = me.toStr(item);
+            if (escape) {
+              // Escape regex characters.
+              item = me.escape(item);
+            }
+            // Items can be empty strings, ignore these.
+            item.length && cleaned.push(item);
+          }
         });
-        var regex = cleaned.join('|');
-        return isWords ? '\\b(' + regex + ')\\b' : '(' + regex + ')';
+        // TODO make this )|(
+        var regex = cleaned.join(')|(?:');
+        return '(?:' + regex + ')';
+      },
+      altSort: function(array) {
+        array.sort(function(a, b) {
+          if (typeof a == 'string' && typeof b == 'string') {
+            // Reverse sort the array of strings.
+            return a.length < b.length ? 1 : (a.length > b.length ? -1 : 0);
+          } else if (typeof a != 'array' && typeof b == 'array') {
+            this.altSort(b);
+            return 0;
+          } else if (typeof b != 'array' && typeof a == 'array') {
+            this.altSort(a);
+            return 0;
+          }
+        });
       },
       escape: function(str) {
-        str = str instanceof RegExp ? str.source : str;
-        return str.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+        return this.toStr(str).replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
       },
       // Convenience methods.
       words: function(array) {
         array = this.argsArray.apply(this, arguments);
-        return this.alt(array, true, true);
+        return '\\b(?:' + this.alt(array, true) + ')\\b';
       },
-      esc: function (array) {
+      esc: function(array) {
         array = this.argsArray.apply(this, arguments);
-        return this.alt(array, false, true);
+        return this.alt(array, true);
       }
-//      add: function (array) {
-//        array = this.argsArray.apply(this, arguments);
-//        var me = this;
-//        return function () {
-//          for (var i = 1; i < arguments.length; i++) {
-//            existing = me.addAlt(existing, arguments[i]);
-//          }
-//          return existing;
-//        };
-//      }
     },
     compile: function() { // TODO remove me arg
       var regexStr = '', me = this;
@@ -159,8 +168,7 @@ define([
         // TODO avoided using getTypeOf, might be slower
         elem = me.regex.alt(elem.items, elem.wordBounded);
       }
-      elem = elem instanceof RegExp ? elem.source : elem;
-      elem = elem.toString();
+      elem = this.regex.toStr(elem);
       elem = me.regex.expandBackrefs(elem);
       elem = me.regex.removeGroups(elem);
       elem = me.regex.replaceDots(elem);
