@@ -10,7 +10,7 @@ define([
 
     elements: [{
       // TODO reduce boilerplate code.
-//      comment: re.alt(elem.comment, '\#.*?$'),
+      comment: re.alt(elem.comment, '\#.*?$'),
 //      string: re.alt(elem.string, '<<<EOT.*?^EOT'),
       // TODO(aramk) this isn't handled correctly
 //      keyword: re.alt(elem.keyword, re.words(['unset', 'print', 'return', 'require_once', 'require', 'list', 'isset', 'include_once', 'include', 'eval', 'exit', 'empty', 'echo', 'die'], ['__NAMESPACE__', '__METHOD__', '__FUNCTION__', '__LINE__', '__FILE__', '__DIR__', '__CLASS__'])),

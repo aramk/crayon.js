@@ -166,43 +166,52 @@ define([
         $.each(regexes, function(i, regex) {
           // TODO refactor this into a single place and avoid infinite loops
           // Generated each loop from the input.
-          output = '';
+//          output = '';
           var match,
               origIndex = 0, // Current position in original value.
-              lastMatchIndex = null,
-              indexShift = 0; // How much the remainder indices have changed for the remaining matches.
+              lastMatchIndex = null;
+          //indexShift = 0; // How much the remainder indices have changed for the remaining matches.
           console.error('regex', regex);
           console.error('isMultiProcess', isMultiProcess);
-          while ((match = regex.exec(input)) != null) {
+          while ((match = regex.exec(remainder)) != null) {
             // TODO better to avoid linear search...
             var matchIndex = lang.getMatchIndex(match);
             if (matchIndex !== null) {
               var element = lang._elementsArrays[i][matchIndex - 1],
                   matchStartIndex = match.index,
                   matchEndIndex = match.index + match[0].length;
-              var matchValue = input.slice(matchStartIndex, matchEndIndex);
+              var matchValue = match[0];//remainder.slice(matchStartIndex, matchEndIndex);
+              matches[matchStartIndex] = {
+                startIndex: matchStartIndex,
+                endIndex: matchEndIndex,
+//                value: matchValue,
+                element: element,
+                regexIndex: i,
+                match: match
+              };
               // Copy preceding value.
-              output += me.filterOutput(lang, input.slice(origIndex, match.index));
+//              output += me.filterOutput(lang, input.slice(origIndex, match.index));
               origIndex = matchEndIndex;
               // Delegate transformation to language.
-              var segment = lang.transform(matchValue, {
-                element: element,
-                value: input,
-                regex: regex,
-                matchIndex: matchIndex,
-                matches: match
-              });
-              output += segment;
+//              var segment = lang.transform(matchValue, {
+//                element: element,
+//                value: input,
+//                regex: regex,
+//                matchIndex: matchIndex,
+//                matches: match
+//              });
+//              output += segment;
               if (isMultiProcess) {
-                console.error('indexShift', indexShift);
+//                console.error('indexShift', indexShift);
                 // Remove the match from the remainder so it cannot be matched again.
-                console.error('remainder 1', remainder);
-                remainder = String.splice(remainder, matchStartIndex + indexShift, matchEndIndex + indexShift, String.repeat(' ', segment.length));
-                console.error('input', input);
-                console.error('segment', segment);
-                console.error('remainder 2', remainder);
+//                console.error('remainder 1', remainder);
+                remainder = String.splice(remainder, matchStartIndex, matchEndIndex, String.repeat(' ', matchValue.length));
+//                remainder = String.splice(remainder, matchStartIndex + indexShift, matchEndIndex + indexShift, String.repeat(' ', segment.length));
+//                console.error('input', input);
+//                console.error('segment', segment);
+//                console.error('remainder 2', remainder);
                 // Must be updated after we replace the match in the remainder, since it only affects future match indices.
-                indexShift = segment.length - matchValue.length;
+//                indexShift = segment.length - matchValue.length;
               }
             }
             // Prevents infinite loops.
@@ -213,13 +222,39 @@ define([
             lastMatchIndex = match.index;
           }
           // Copy remaining value.
-          output += me.filterOutput(lang, input.slice(origIndex, input.length));
+//          output += me.filterOutput(lang, input.slice(origIndex, input.length));
           // Allows repeating.
 //          input = output;
-          if (isMultiProcess) {
-            input = remainder;
-          }
+//          if (isMultiProcess) {
+//            input = remainder;
+//          }
         });
+
+        var output = '', currIndex = 0;
+        for (var index in matches) {
+          var match = matches[index],
+              startIndex = match.startIndex,
+              endIndex = match.endIndex,
+              regex = regexes[match.regexIndex];
+          // Copy preceding value.
+          output += me.filterOutput(lang, input.slice(currIndex, startIndex));
+          // Delegate transformation to language.
+          var segment = lang.transform(match.match[0], {
+            element: match.element,
+            value: input,
+            regex: regex,
+            startIndex: startIndex,
+            match: match
+          });
+          // Substitute the transformation.
+          output += segment;
+          currIndex = endIndex;
+        }
+        // Copy remaining value.
+        output += me.filterOutput(lang, input.slice(endIndex, input.length));
+
+        console.error('matches', matches);
+        console.error('remainder', remainder);
         df.resolve(output);
       }, function(err) {
         df.reject(err);
@@ -227,7 +262,7 @@ define([
       return df;
     },
 
-    filterOutput: function (lang, input) {
+    filterOutput: function(lang, input) {
       return lang.encodeEntities(input);
     }
 
