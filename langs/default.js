@@ -10,13 +10,15 @@ define([
     info: {
       name: 'Default'
     },
-    cssPrefix: 'crayon', // TODO repeat of pluginId in defaults, load from there?
-    // Changes the behaviour when extending.
-    // "add" will add element sets of the source language into the destination language. (recommended/default)
-    // "merge" will merge any missing elements from the source language into the destination language for only the first and only elements set. If more than one elements set exists for the source language, merging is too ambiguous and this option defaults to "add".
-    extendMode: "add",
     // Stores a list of the elements used during compilation. The order allows us to determine which group was matched.
     _elementsArrays: [],
+    cssPrefix: 'crayon', // TODO repeat of pluginId in defaults, load from there?
+    // A character which replaces matches as a placeholder to avoid matching twice. This should be a character which does not appear in your language regex definition.
+    nullChar: '\u263A',
+    // Changes the behaviour when extending.
+    // "add" will add element sets of the source language into the destination language. (recommended/default)
+    // "merge" will merge any missing elements from the source language into the destination language for only the first elements set. If more than one elements set exists for the source language, merging is too ambiguous and this option defaults to "add".
+    extendMode: "add",
     extend: function(dest) {
       // TODO separate from the language?
       var source = this;
@@ -288,18 +290,18 @@ define([
     comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
 //    preprocessor: /(#.*?$)/,
 //    tag: null,
-//    string: /(["']).*?([^\\]|^)(["'])/, // TODO this matches the first character, we should ignore it,
-//    keyword: null,
-//    statement: re.words(['enddeclare', 'endforeach', 'endswitch', 'continue', 'endwhile', 'foreach', 'finally', 'default', 'elseif', 'endfor', 'return', 'switch', 'assert', 'break', 'catch', 'endif', 'throw', 'while', 'then', 'case', 'else', 'goto', 'each', 'and', 'for', 'try', 'use', 'xor', 'and', 'not', 'end', 'as', 'do', 'if', 'or', 'in', 'is', 'to']),
-//    reserved: re.words(['implements', 'instanceof', 'declare', 'default', 'extends', 'typedef', 'parent', 'super', 'child', 'clone', 'self', 'this', 'new']),
-//    type: re.words(['cfunction', 'interface', 'namespace', 'function', 'unsigned', 'boolean', 'integer', 'package', 'double', 'struct', 'string', 'signed', 'object', 'class', 'array', 'float', 'short', 'false', 'char', 'long', 'void', 'word', 'byte', 'bool', 'null', 'true', 'enum', 'var', 'int']),
-//    modifier: re.words(['protected', 'abstract', 'property', 'private', 'global', 'public', 'static', 'native', 'const', 'final']),
-//    entity: /(\b[a-z_]\w*\b(?=\s*\([^\)]*\)))|(\b[a-z_]\w+\b\s+(?=\b[a-z_]\w+\b))/,
-//    variable: /([A-Za-z_]\w*(?=\s*[=\[\.]))/, // TODO this can cause inconsistencies
-//    identifier: /\b[A-Za-z_]\w*\b/,
-//    constant: /\b[0-9][\.\w]*/,
-//    operator: re.esc(['=&', '<<<', '>>>', '<<', '>>', '<<=', '=>>', '!==', '!=', '^=', '*=', '&=', '%=', '|=', '/=', '===', '==', '<>', '->', '<=', '>=', '++', '--', '&&', '||', '::', '#', '+', '-', '*', '/', '%', '=', '&', '|', '^', '~', '!', '<', '>', ':']),
-//    symbol: re.esc(['~', '`', '!', '@', '#', '$', '%', '(', ')', '_', '{', '}', '[', ']', '|', '\\', ':', ';', ',', '.', '?'])
+    string: /(["']).*?([^\\]|^)(["'])/, // TODO this matches the first character, we should ignore it,
+    keyword: null,
+    statement: re.words(['enddeclare', 'endforeach', 'endswitch', 'continue', 'endwhile', 'foreach', 'finally', 'default', 'elseif', 'endfor', 'return', 'switch', 'assert', 'break', 'catch', 'endif', 'throw', 'while', 'then', 'case', 'else', 'goto', 'each', 'and', 'for', 'try', 'use', 'xor', 'and', 'not', 'end', 'as', 'do', 'if', 'or', 'in', 'is', 'to']),
+    reserved: re.words(['implements', 'instanceof', 'declare', 'default', 'extends', 'typedef', 'parent', 'super', 'child', 'clone', 'self', 'this', 'new']),
+    type: re.words(['cfunction', 'interface', 'namespace', 'function', 'unsigned', 'boolean', 'integer', 'package', 'double', 'struct', 'string', 'signed', 'object', 'class', 'array', 'float', 'short', 'false', 'char', 'long', 'void', 'word', 'byte', 'bool', 'null', 'true', 'enum', 'var', 'int']),
+    modifier: re.words(['protected', 'abstract', 'property', 'private', 'global', 'public', 'static', 'native', 'const', 'final']),
+    entity: /(\b[a-z_]\w*\b(?=\s*\([^\)]*\)))|(\b[a-z_]\w+\b\s+(?=\b[a-z_]\w+\b))/,
+    variable: /([A-Za-z_]\w*(?=\s*[=\[\.]))/, // TODO this can cause inconsistencies
+    identifier: /\b[A-Za-z_]\w*\b/,
+    constant: /\b[0-9][\.\w]*/,
+    operator: re.esc(['=&', '<<<', '>>>', '<<', '>>', '<<=', '=>>', '!==', '!=', '^=', '*=', '&=', '%=', '|=', '/=', '===', '==', '<>', '->', '<=', '>=', '++', '--', '&&', '||', '::', '#', '+', '-', '*', '/', '%', '=', '&', '|', '^', '~', '!', '<', '>', ':']),
+    symbol: re.esc(['~', '`', '!', '@', '#', '$', '%', '(', ')', '_', '{', '}', '[', ']', '|', '\\', ':', ';', ',', '.', '?'])
   };
 
   return lang;

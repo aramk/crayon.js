@@ -154,66 +154,49 @@ define([
     // TODO rename to parse or highlight?
     // TODO assumes value has entities decoded.
     compile: function(input, atts) {
-      var me = this, output = '', df = $.Deferred();
+      var me = this, df = $.Deferred();
       this.langs.compile(atts.lang, this.options).then(function(lang, regexes) {
         input = lang.transformIndent(input);
-        // Matches in the input are removed from this string.
-        // TODO use "<" as the placeholder to avoid matches, since it cannot be matched due to encoding.
-        var matches = {}, // Contains index to match
-            isMultiProcess = regexes.length > 1, // Whether we need to process the input more than once.
-            remainder = input; // Contains the remaining segments of the input that aren't matched.
+        var matches = {}, // Index to match map.
+            isMultiPass = regexes.length > 1, // Whether we need to process the input more than once.
+            remainder = input; // Contains the input minus any matched segments.
         // TODO handle case of no regexes?
+
+        console.error('input', input);
+
         $.each(regexes, function(i, regex) {
-          // TODO refactor this into a single place and avoid infinite loops
-          // Generated each loop from the input.
-//          output = '';
           var match,
-              origIndex = 0, // Current position in original value.
+              currIndex = 0,
               lastMatchIndex = null;
-          //indexShift = 0; // How much the remainder indices have changed for the remaining matches.
-          console.error('regex', regex);
-          console.error('isMultiProcess', isMultiProcess);
+//          console.error('regex', regex);
+          console.error('isMultiProcess', isMultiPass);
           while ((match = regex.exec(remainder)) != null) {
             // TODO better to avoid linear search...
-            var matchIndex = lang.getMatchIndex(match);
+            var matchIndex = lang.getMatchIndex(match),
+                value = match[0];
+            console.error('value', value, value.indexOf(lang.nullChar));
+            if (isMultiPass && value.indexOf(lang.nullChar) >= 0) {
+              Log.debug('Duplicate match, ignoring', value);
+              continue;
+            }
             if (matchIndex !== null) {
               var element = lang._elementsArrays[i][matchIndex - 1],
                   matchStartIndex = match.index,
-                  matchEndIndex = match.index + match[0].length;
-              var matchValue = match[0];//remainder.slice(matchStartIndex, matchEndIndex);
+                  matchEndIndex = match.index + value.length;
               matches[matchStartIndex] = {
                 startIndex: matchStartIndex,
                 endIndex: matchEndIndex,
-//                value: matchValue,
                 element: element,
                 regexIndex: i,
                 match: match
               };
-              // Copy preceding value.
-//              output += me.filterOutput(lang, input.slice(origIndex, match.index));
-              origIndex = matchEndIndex;
-              // Delegate transformation to language.
-//              var segment = lang.transform(matchValue, {
-//                element: element,
-//                value: input,
-//                regex: regex,
-//                matchIndex: matchIndex,
-//                matches: match
-//              });
-//              output += segment;
-              if (isMultiProcess) {
-//                console.error('indexShift', indexShift);
-                // Remove the match from the remainder so it cannot be matched again.
-//                console.error('remainder 1', remainder);
-                remainder = String.splice(remainder, matchStartIndex, matchEndIndex, String.repeat(' ', matchValue.length));
-//                remainder = String.splice(remainder, matchStartIndex + indexShift, matchEndIndex + indexShift, String.repeat(' ', segment.length));
-//                console.error('input', input);
-//                console.error('segment', segment);
-//                console.error('remainder 2', remainder);
-                // Must be updated after we replace the match in the remainder, since it only affects future match indices.
-//                indexShift = segment.length - matchValue.length;
+              currIndex = matchEndIndex;
+              if (isMultiPass) {
+                var blank = value.replace(/\S/gm, lang.nullChar);
+                remainder = String.splice(remainder, matchStartIndex, matchEndIndex, blank);
               }
             }
+            console.error('remainder', remainder);
             // Prevents infinite loops.
             if (lastMatchIndex == match.index) {
               Log.warn('Match not found, aborting');
@@ -221,13 +204,6 @@ define([
             }
             lastMatchIndex = match.index;
           }
-          // Copy remaining value.
-//          output += me.filterOutput(lang, input.slice(origIndex, input.length));
-          // Allows repeating.
-//          input = output;
-//          if (isMultiProcess) {
-//            input = remainder;
-//          }
         });
 
         var output = '', currIndex = 0;
@@ -254,7 +230,6 @@ define([
         output += me.filterOutput(lang, input.slice(endIndex, input.length));
 
         console.error('matches', matches);
-        console.error('remainder', remainder);
         df.resolve(output);
       }, function(err) {
         df.reject(err);
