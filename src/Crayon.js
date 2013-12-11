@@ -3,8 +3,9 @@ define([
   'jquery', // src/jquery.js,
   'defaults',
   'langs/default', // TODO put in separate class
+  'utility/String',
   'utility/Log' // TODO prefix with "crayon"
-], function(module, $, defaults, defaultLang, Log) {
+], function(module, $, defaults, defaultLang, String, Log) {
 
   function Crayon(element, options) {
     this.element = element;
@@ -153,9 +154,13 @@ define([
     // TODO rename to parse or highlight?
     // TODO assumes value has entities decoded.
     compile: function(input, atts) {
-      var output = '', df = $.Deferred();
+      var me = this, output = '', df = $.Deferred();
       this.langs.compile(atts.lang, this.options).then(function(lang, regexes) {
         input = lang.transformIndent(input);
+        // Matches in the input are removed from this string.
+        // TODO use "<" as the placeholder to avoid matches, since it cannot be matched due to encoding.
+        var isMultiProcess = regexes.length > 1, // Whether we need to process the input more than once.
+            remainder = input; // Contains the remaining segments of the input that aren't matched.
         // TODO handle case of no regexes?
         $.each(regexes, function(_, regex) {
           // TODO refactor this into a single place and avoid infinite loops
@@ -169,19 +174,29 @@ define([
             // TODO better to avoid linear search...
             var matchIndex = lang.getMatchIndex(matches);
             if (matchIndex !== null) {
-              var element = lang._elementsArray[matchIndex - 1];
+              var element = lang._elementsArray[matchIndex - 1],
+                  matchStartIndex = matches.index, matchEndIndex = matches.index + matches[0].length;
               var matchValue = input.slice(matches.index, matches.index + matches[0].length);
               // Copy preceding value.
-              output += lang.encodeEntities(input.slice(origIndex, matches.index));
+              output += me.filterOutput(lang, input.slice(origIndex, matches.index));
               origIndex = matches.index + matchValue.length;
               // Delegate transformation to language.
-              output += lang.transform(matchValue, {
+              var segment = lang.transform(matchValue, {
                 element: element,
                 value: input,
                 regex: regex,
                 matchIndex: matchIndex,
                 matches: matches
               });
+              output += segment;
+              if (isMultiProcess) {
+                // Remove the match from the remainder so it cannot be matched again.
+                console.error('remainder 1', remainder);
+                remainder = String.splice(remainder, matchStartIndex, matchEndIndex, String.repeat(' ', segment.length));
+                console.error('input', input);
+                console.error('segment', segment);
+                console.error('remainder 2', remainder);
+              }
             }
             // Prevents infinite loops.
             if (lastMatchIndex == matches.index) {
@@ -191,15 +206,22 @@ define([
             lastMatchIndex = matches.index;
           }
           // Copy remaining value.
-          output += lang.encodeEntities(input.slice(origIndex, input.length));
+          output += me.filterOutput(lang, input.slice(origIndex, input.length));
           // Allows repeating.
-          input = output;
+//          input = output;
+          if (isMultiProcess) {
+            input = remainder;
+          }
         });
         df.resolve(output);
       }, function(err) {
         df.reject(err);
       });
       return df;
+    },
+
+    filterOutput: function (lang, input) {
+      return lang.encodeEntities(input);
     }
 
   };
