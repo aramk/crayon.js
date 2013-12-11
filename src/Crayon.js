@@ -159,36 +159,38 @@ define([
         input = lang.transformIndent(input);
         // Matches in the input are removed from this string.
         // TODO use "<" as the placeholder to avoid matches, since it cannot be matched due to encoding.
-        var isMultiProcess = regexes.length > 1, // Whether we need to process the input more than once.
+        var matches = {}, // Contains index to match
+            isMultiProcess = regexes.length > 1, // Whether we need to process the input more than once.
             remainder = input; // Contains the remaining segments of the input that aren't matched.
         // TODO handle case of no regexes?
         $.each(regexes, function(i, regex) {
           // TODO refactor this into a single place and avoid infinite loops
           // Generated each loop from the input.
           output = '';
-          var matches,
+          var match,
               origIndex = 0, // Current position in original value.
               lastMatchIndex = null,
               indexShift = 0; // How much the remainder indices have changed for the remaining matches.
           console.error('regex', regex);
           console.error('isMultiProcess', isMultiProcess);
-          while ((matches = regex.exec(input)) != null) {
+          while ((match = regex.exec(input)) != null) {
             // TODO better to avoid linear search...
-            var matchIndex = lang.getMatchIndex(matches);
+            var matchIndex = lang.getMatchIndex(match);
             if (matchIndex !== null) {
               var element = lang._elementsArrays[i][matchIndex - 1],
-                  matchStartIndex = matches.index, matchEndIndex = matches.index + matches[0].length;
+                  matchStartIndex = match.index,
+                  matchEndIndex = match.index + match[0].length;
               var matchValue = input.slice(matchStartIndex, matchEndIndex);
               // Copy preceding value.
-              output += me.filterOutput(lang, input.slice(origIndex, matches.index));
-              origIndex = matches.index + matchValue.length;
+              output += me.filterOutput(lang, input.slice(origIndex, match.index));
+              origIndex = matchEndIndex;
               // Delegate transformation to language.
               var segment = lang.transform(matchValue, {
                 element: element,
                 value: input,
                 regex: regex,
                 matchIndex: matchIndex,
-                matches: matches
+                matches: match
               });
               output += segment;
               if (isMultiProcess) {
@@ -204,11 +206,11 @@ define([
               }
             }
             // Prevents infinite loops.
-            if (lastMatchIndex == matches.index) {
+            if (lastMatchIndex == match.index) {
               Log.warn('Match not found, aborting');
               break;
             }
-            lastMatchIndex = matches.index;
+            lastMatchIndex = match.index;
           }
           // Copy remaining value.
           output += me.filterOutput(lang, input.slice(origIndex, input.length));
