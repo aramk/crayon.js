@@ -162,21 +162,23 @@ define([
         var isMultiProcess = regexes.length > 1, // Whether we need to process the input more than once.
             remainder = input; // Contains the remaining segments of the input that aren't matched.
         // TODO handle case of no regexes?
-        $.each(regexes, function(_, regex) {
+        $.each(regexes, function(i, regex) {
           // TODO refactor this into a single place and avoid infinite loops
           // Generated each loop from the input.
           output = '';
           var matches,
               origIndex = 0, // Current position in original value.
-              lastMatchIndex = null; // TODO possible to replace with string.match()?
+              lastMatchIndex = null,
+              indexShift = 0; // How much the remainder indices have changed for the remaining matches.
           console.error('regex', regex);
+          console.error('isMultiProcess', isMultiProcess);
           while ((matches = regex.exec(input)) != null) {
             // TODO better to avoid linear search...
             var matchIndex = lang.getMatchIndex(matches);
             if (matchIndex !== null) {
-              var element = lang._elementsArray[matchIndex - 1],
+              var element = lang._elementsArrays[i][matchIndex - 1],
                   matchStartIndex = matches.index, matchEndIndex = matches.index + matches[0].length;
-              var matchValue = input.slice(matches.index, matches.index + matches[0].length);
+              var matchValue = input.slice(matchStartIndex, matchEndIndex);
               // Copy preceding value.
               output += me.filterOutput(lang, input.slice(origIndex, matches.index));
               origIndex = matches.index + matchValue.length;
@@ -190,12 +192,15 @@ define([
               });
               output += segment;
               if (isMultiProcess) {
+                console.error('indexShift', indexShift);
                 // Remove the match from the remainder so it cannot be matched again.
                 console.error('remainder 1', remainder);
-                remainder = String.splice(remainder, matchStartIndex, matchEndIndex, String.repeat(' ', segment.length));
+                remainder = String.splice(remainder, matchStartIndex + indexShift, matchEndIndex + indexShift, String.repeat(' ', segment.length));
                 console.error('input', input);
                 console.error('segment', segment);
                 console.error('remainder 2', remainder);
+                // Must be updated after we replace the match in the remainder, since it only affects future match indices.
+                indexShift = segment.length - matchValue.length;
               }
             }
             // Prevents infinite loops.
