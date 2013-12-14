@@ -3,9 +3,10 @@ define([
   'jquery', // src/jquery.js,
   'defaults',
   'langs/default', // TODO put in separate class
+  'langs/tags',
   'utility/String',
   'utility/Log' // TODO prefix with "crayon"
-], function(module, $, defaults, defaultLang, String, Log) {
+], function(module, $, defaults, defaultLang, tags, String, Log) {
 
   function Crayon(element, options) {
     this.element = element;
@@ -139,6 +140,7 @@ define([
           atts: parsedAtts
         };
         Log.info('Attributes for node', this.element, parsedAtts);
+        // TODO(aramk) handle multi-language tags first by recursively calling compile for the appropriate language.
         me.compile(me.options.getTextValue(node), parsedAtts).then(function(output) {
           if (output && output.length) {
             me.options.setHtmlValue(node, output);
