@@ -38,10 +38,15 @@ define([
           df.resolve(lang);
         } else {
           require(['langs/' + id], function(lang) {
-            Log.info('Language loaded', id, lang);
-            me.addToCache(id, lang);
-            lang._compiled = null;
-            df.resolve(lang);
+            if (lang) {
+              Log.info('Language loaded', id, lang);
+              me.addToCache(id, lang);
+              lang._compiled = null;
+              df.resolve(lang);
+            } else {
+              Log.error('Language failed to load', id, lang);
+              df.reject(null);
+            }
           }, function(err) {
             // TODO verify this is called in IE 6-8.
             df.reject(err);
@@ -146,7 +151,7 @@ define([
           $node.addClass(me.options.themeCssClass(themeId));
         }, function(err) {
           // TODO(aramk) handle this better?
-          throw err;
+          Log.error('Failed to compile', node, err);
         });
       });
     },
@@ -162,19 +167,19 @@ define([
             remainder = input; // Contains the input minus any matched segments.
         // TODO handle case of no regexes?
 
-        console.error('input', input);
+//        console.error('input', input);
 
         $.each(regexes, function(i, regex) {
           var match,
               currIndex = 0,
               lastMatchIndex = null;
-//          console.error('regex', regex);
-          console.error('isMultiProcess', isMultiPass);
+//          console.error('regex', lang.info.name, regex);
+//          console.error('isMultiProcess', isMultiPass);
           while ((match = regex.exec(remainder)) != null) {
             // TODO better to avoid linear search...
             var matchIndex = lang.getMatchIndex(match),
                 value = match[0];
-            console.error('value', value, value.indexOf(lang.nullChar));
+//            console.error('value', value, value.indexOf(lang.nullChar));
             if (isMultiPass && value.indexOf(lang.nullChar) >= 0) {
               Log.debug('Duplicate match, ignoring', value);
               continue;
@@ -196,7 +201,7 @@ define([
                 remainder = String.splice(remainder, matchStartIndex, matchEndIndex, blank);
               }
             }
-            console.error('remainder', remainder);
+//            console.error('remainder', remainder);
             // Prevents infinite loops.
             if (lastMatchIndex == match.index) {
               Log.warn('Match not found, aborting');
@@ -229,7 +234,7 @@ define([
         // Copy remaining value.
         output += me.filterOutput(lang, input.slice(endIndex, input.length));
 
-        console.error('matches', matches);
+//        console.error('matches', matches);
         df.resolve(output);
       }, function(err) {
         df.reject(err);

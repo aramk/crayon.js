@@ -49,6 +49,7 @@ define([
         }
         deepMerge.elements = dest.elements.concat(sourceElemArray);
       }
+//      console.error('deepMerge', deepMerge);
       return deepMerge;
     },
     regex: {
@@ -110,8 +111,19 @@ define([
         // TODO convert "(?<!a)b" -> "[^a]b" but only works for a single character
         // TODO see http://stackoverflow.com/questions/641407/javascript-negative-lookbehind-equivalent
       },
-      argsArray: function(args) {
-        return args instanceof Array ? args : Array.prototype.slice.apply(arguments);
+      argsArray: function() {
+        // Normalises a set of arguments into a single array of arguments.
+        var args = [];
+        $.each(arguments, function (i, arg) {
+          if (arg instanceof Array) {
+            $.each(arg, function (j, item) {
+              args.push(item);
+            });
+          } else {
+            args.push(arg);
+          }
+        });
+        return args;
       },
       toStr: function(regex) {
         return regex instanceof RegExp ? regex.source : regex.toString();
@@ -162,6 +174,7 @@ define([
       // Convenience methods.
       words: function(array) {
         array = this.argsArray.apply(this, arguments);
+//        console.error('array', array);
         return '\\b(?:' + this.alt(array, true) + ')\\b';
       },
       esc: function(array) {
@@ -288,8 +301,8 @@ define([
   var re = lang.regex;
   lang.elements = {
     comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
-//    preprocessor: /(#.*?$)/,
-//    tag: null,
+    preprocessor: /(#.*?$)/,
+    tag: null,
     string: /(["']).*?([^\\]|^)(["'])/, // TODO this matches the first character, we should ignore it,
     keyword: null,
     statement: re.words(['enddeclare', 'endforeach', 'endswitch', 'continue', 'endwhile', 'foreach', 'finally', 'default', 'elseif', 'endfor', 'return', 'switch', 'assert', 'break', 'catch', 'endif', 'throw', 'while', 'then', 'case', 'else', 'goto', 'each', 'and', 'for', 'try', 'use', 'xor', 'and', 'not', 'end', 'as', 'do', 'if', 'or', 'in', 'is', 'to']),
@@ -297,7 +310,7 @@ define([
     type: re.words(['cfunction', 'interface', 'namespace', 'function', 'unsigned', 'boolean', 'integer', 'package', 'double', 'struct', 'string', 'signed', 'object', 'class', 'array', 'float', 'short', 'false', 'char', 'long', 'void', 'word', 'byte', 'bool', 'null', 'true', 'enum', 'var', 'int']),
     modifier: re.words(['protected', 'abstract', 'property', 'private', 'global', 'public', 'static', 'native', 'const', 'final']),
     entity: /(\b[a-z_]\w*\b(?=\s*\([^\)]*\)))|(\b[a-z_]\w+\b\s+(?=\b[a-z_]\w+\b))/,
-    variable: /([A-Za-z_]\w*(?=\s*[=\[\.]))/, // TODO this can cause inconsistencies
+    variable: /([A-Za-z_]\w*(?=\s*[=\[\.]))/, // TODO this can cause inconsistencies, just remove it.
     identifier: /\b[A-Za-z_]\w*\b/,
     constant: /\b[0-9][\.\w]*/,
     operator: re.esc(['=&', '<<<', '>>>', '<<', '>>', '<<=', '=>>', '!==', '!=', '^=', '*=', '&=', '%=', '|=', '/=', '===', '==', '<>', '->', '<=', '>=', '++', '--', '&&', '||', '::', '#', '+', '-', '*', '/', '%', '=', '&', '|', '^', '~', '!', '<', '>', ':']),
