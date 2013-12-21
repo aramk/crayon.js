@@ -138,21 +138,6 @@ define([
 
       getCacheLang: function(id) {
         return this._cache[id];
-      },
-
-      compile: function(id, options) {
-        var me = this;
-        var df = $.Deferred();
-        id = id || options.defaultLangId;
-        this.get(id).then(function(lang) {
-          var compiled = lang.compile();
-          Log.debug('Compiled language', id, lang);
-          df.resolve(lang, compiled);
-        }, function(err) {
-          Log.error('Could not load language', id);
-          df.reject(err);
-        });
-        return df;
       }
     },
 
