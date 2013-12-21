@@ -5,6 +5,7 @@ require.config({
       name: 'langs',
       location: '../langs'
     },
+    'util',
     {
       name: 'utility',
       location: '../lib/utility'

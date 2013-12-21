@@ -1,6 +1,6 @@
 define([
   'jquery',
-  './regex',
+  'util/regex',
   'utility/Log'
 ], function($, regex, Log) {
   var Elements = function(args) {
