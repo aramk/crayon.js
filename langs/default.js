@@ -1,13 +1,10 @@
 define([
-  'module',
   'jquery',
   'util/regex',
   'Language',
   'Elements',
   'utility/Log'
-], function(module, $, regex, Language, Elements, Log) {
-
-  console.error('module', module);
+], function($, regex, Language, Elements, Log) {
 
   var elements = new Elements();
   elements.setElements({
@@ -44,6 +41,7 @@ define([
       ['~', '`', '!', '@', '#', '$', '%', '(', ')', '_', '{', '}', '[', ']', '|', '\\', ':', ';',
         ',', '.', '?'])
   });
+
   var Default = function() {
     this.setInfo({
       name: 'Default'
@@ -53,4 +51,5 @@ define([
   // TODO(aramk) add a proper extends method.
   Default.prototype = new Language();
   return Default;
+
 });

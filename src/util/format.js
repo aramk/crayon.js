@@ -34,11 +34,6 @@ define([
         value = this.convertSpaces(value);
       }
       return value;
-    },
-    // TODO use better name for value variable
-    transform: function(matchValue, args) {
-      matchValue = this.encodeEntities(matchValue);
-      return '<span class="' + defaults.pluginId + '-' + args.element + '">' + matchValue + '</span>';
     }
   };
 });
