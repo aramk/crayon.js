@@ -7,7 +7,6 @@ define([
     info: {
       name: 'PHP'
     },
-
     elements: [{
       // TODO reduce boilerplate code.
       comment: re.alt(elem.comment, '\#.*?$'),

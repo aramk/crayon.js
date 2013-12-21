@@ -140,7 +140,6 @@ define([
           atts: parsedAtts
         };
         Log.info('Attributes for node', this.element, parsedAtts);
-        // TODO(aramk) handle multi-language tags first by recursively calling compile for the appropriate language.
         me.compile(me.options.getTextValue(node), parsedAtts).then(function(output) {
           if (output && output.length) {
             me.options.setHtmlValue(node, output);
@@ -162,6 +161,10 @@ define([
     // TODO assumes value has entities decoded.
     compile: function(input, atts) {
       var me = this, df = $.Deferred();
+      // TODO(aramk) handle multi-language tags first by recursively calling compile for the appropriate language.
+
+
+
       this.langs.compile(atts.lang, this.options).then(function(lang, regexes) {
         input = lang.transformIndent(input);
         var matches = {}, // Index to match map.
@@ -177,7 +180,9 @@ define([
               lastMatchIndex = null;
 //          console.error('regex', lang.info.name, regex);
 //          console.error('isMultiProcess', isMultiPass);
+//            console.error('regex', regex);
           while ((match = regex.exec(remainder)) != null) {
+//            console.error('match', match);
             // TODO better to avoid linear search...
             var matchIndex = lang.getMatchIndex(match),
                 value = match[0];

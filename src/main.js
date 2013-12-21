@@ -1,20 +1,6 @@
 // RequireJS not used to ensure plugin is usable synchronously
 (function($, window, document, undefined) {
 
-  require.config({
-    baseUrl: 'src',
-    packages: [
-      {
-        name: 'langs',
-        location: '../langs'
-      },
-      {
-        name: 'utility',
-        location: '../lib/utility'
-      }
-    ]
-  });
-
   // Instantiate the plugin for jQuery
   var name = 'crayon';
   $.fn[name] = function(options) {

@@ -15,7 +15,8 @@
   <script>require = undefined</script>
   <script src="lib/require.js"></script>
   <script src="lib/jquery.js"></script>
-  <script src="src/main.js"></script>
+  <script src="src/config.js"></script>
+  <!--<script src="src/main.js"></script>-->
 
   <!-- Production -->
   <!--<link rel="stylesheet" type="text/css" href="build/crayon.min.css" />-->
@@ -23,8 +24,19 @@
   <!--<script src="build/crayon.min.js"></script>-->
 
   <script>
-    $(function() {
-      $('body').crayon({});
+    require([
+      'jquery',
+      'langs/Default'
+    ], function ($, Default) {
+      console.error('Default', Default);
+      $(function() {
+        var text = $('body pre').text();
+//      var crayon = new Crayon();
+        var lang = new Default();
+        console.error('lang', lang);
+        var result = lang.compile(text);
+        console.error('result', result);
+      });
     });
   </script>
 
