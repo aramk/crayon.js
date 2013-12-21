@@ -1,5 +1,6 @@
 define([
-], function () {
+  'defaults'
+], function (defaults) {
   return {
     spacesInTabString: function() {
       return new Array(defaults.lang.spacesInTab).join(' ');
@@ -37,7 +38,7 @@ define([
     // TODO use better name for value variable
     transform: function(matchValue, args) {
       matchValue = this.encodeEntities(matchValue);
-      return '<span class="' + lang.cssPrefix + '-' + args.element + '">' + matchValue + '</span>';
+      return '<span class="' + defaults.pluginId + '-' + args.element + '">' + matchValue + '</span>';
     }
   };
 });

@@ -1,10 +1,14 @@
 define([
+  'module',
   'jquery',
   'util/regex',
   'Language',
   'Elements',
   'utility/Log'
-], function($, regex, Language, Elements, Log) {
+], function(module, $, regex, Language, Elements, Log) {
+
+  console.error('module', module);
+
   var elements = new Elements();
   elements.setElements({
     comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,

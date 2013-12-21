@@ -8,7 +8,7 @@ define([
     this._elements = [] || args.elements;
     this.isLazy = args.isLazy;
     this._compiled = null;
-    // Stores a list of the elements used during compilation. The order allows us to determine which group was matched.
+    // Array of arrays of element IDs. Used for looking up their index.
     this._elementsArrays = [];
   };
   $.extend(Elements.prototype, {
@@ -19,6 +19,9 @@ define([
     },
     getElements: function() {
       return this._elements;
+    },
+    getElementAtIndex: function(i, j) {
+      return this._elementsArrays[i][j];
     },
     compile: function() {
       if (!this._compiled) {

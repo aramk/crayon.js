@@ -6,7 +6,7 @@ define([
     pluginId: 'crayon',
     selector: 'pre',
     baseURL: '',
-    defaultLangId: 'default',
+    defaultLangId: 'Default',
     defaultThemeId: 'classic',
     themeDir: 'themes',
     attrSelector: 'data-crayon',

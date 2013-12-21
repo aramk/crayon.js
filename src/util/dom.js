@@ -1,10 +1,11 @@
 define([
-], function() {
+  'defaults'
+], function(defaults) {
   return {
     // Methods
     attrParser: function(attStr) {
       var match, atts = {};
-      while ((match = this.reAttr.exec(attStr)) != null) {
+      while ((match = defaults.reAttr.exec(attStr)) != null) {
         atts[match[1]] = match[2];
       }
       return atts;

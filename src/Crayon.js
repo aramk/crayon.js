@@ -2,18 +2,22 @@ define([
   'module',
   'jquery', // src/jquery.js,
   'defaults',
-  'langs/default', // TODO put in separate class
+  'langs/Default', // TODO put in separate class
   'langs/tags',
+  // TODO rename utils to distinguish
+  'util/dom',
+  'util/format',
+  'util/regex',
   'utility/String',
   'utility/Log' // TODO prefix with "crayon"
-], function(module, $, defaults, defaultLang, tags, String, Log) {
+], function(module, $, defaults, Default, tags, dom, format, regex, String, Log) {
 
-  function Crayon(element, options) {
+  var Crayon = function (element, options) {
     this.element = element;
     this.options = $.extend({}, defaults, options);
     this.init();
     Log.info('Crayon init, options:', this.options, 'element:', this.element);
-  }
+  };
 
   Crayon.prototype = {
 
@@ -28,20 +32,21 @@ define([
       init: function(options) {
         this.options = options || {};
         this._cache = {};
-        this.addToCache(options.defaultLangId, defaultLang);
+        // TODO(aramk) pass in this.options to constructor to replace defaults.
+        this.setCacheLang('Default', new Default());
       },
 
       get: function(id) {
         var me = this;
         var df = $.Deferred();
-        var lang = this._cache[id];
+        var lang = me.getCacheLang(id);
         if (lang) {
           df.resolve(lang);
         } else {
           require(['langs/' + id], function(lang) {
             if (lang) {
               Log.info('Language loaded', id, lang);
-              me.addToCache(id, lang);
+              me.setCacheLang(id, lang);
               lang._compiled = null;
               df.resolve(lang);
             } else {
@@ -65,9 +70,12 @@ define([
         return $.ajax(options);
       },
 
-      addToCache: function(id, lang) {
+      setCacheLang: function (id, lang) {
         this._cache[id] = lang;
-        $.extend(lang, this.options.lang);
+      },
+
+      getCacheLang: function (id) {
+        return this._cache[id];
       },
 
       compile: function(id, options) {
@@ -75,11 +83,9 @@ define([
         var df = $.Deferred();
         id = id || options.defaultLangId;
         this.get(id).then(function(lang) {
-          if (!lang._compiled) {
-            lang._compiled = lang.compile();
-            Log.info('Compiled language', id, lang);
-          }
-          df.resolve(lang, lang._compiled);
+          var compiled = lang.compile();
+          Log.debug('Compiled language', id, lang);
+          df.resolve(lang, compiled);
         }, function(err) {
           Log.error('Could not load language', id);
           df.reject(err);
@@ -98,7 +104,12 @@ define([
         // Default theme is assumed to be bundled.
         this._cache[options.defaultThemeId] = true;
       },
-
+      themeCssClass: function(id) {
+        return this.options.pluginId + '-theme-' + id;
+      },
+      themeURL: function(id) {
+        return this.options.themeDir + '/' + id + '.css';
+      },
       load: function(id) {
         var theme = this._cache[id];
         if (!theme) {
@@ -108,7 +119,7 @@ define([
           // TODO fallback to classic if this fails - perhaps we should create a style tag instead
           // and use $.get to detect failure.
           // TODO even better, we should be able to combine certain themes into the core.css and prevent need to load
-          $css.attr('href', this.options.themeURL(id));
+          $css.attr('href', this.themes.themeURL(id));
         }
       }
     },
@@ -135,21 +146,21 @@ define([
       nodes.each(function(i, node) {
         var $node = $(node);
         var atts = $(node).attr(me.options.attrSelector);
-        var parsedAtts = me.options.attrParser(atts);
+        var parsedAtts = dom.attrParser(atts);
         node.crayon = {
           atts: parsedAtts
         };
         Log.info('Attributes for node', this.element, parsedAtts);
-        me.compile(me.options.getTextValue(node), parsedAtts).then(function(output) {
+        me.compile(dom.getTextValue(node), parsedAtts).then(function(output) {
           if (output && output.length) {
-            me.options.setHtmlValue(node, output);
+            dom.setHtmlValue(node, output);
           } else {
             Log.error('Compilation returned no output', output);
           }
           $node.addClass(me.options.pluginId);
           var themeId = parsedAtts.theme || me.options.defaultThemeId;
           me.themes.load(themeId);
-          $node.addClass(me.options.themeCssClass(themeId));
+          $node.addClass(me.themes.themeCssClass(themeId));
         }, function(err) {
           // TODO(aramk) handle this better?
           Log.error('Failed to compile', node, err);
@@ -163,10 +174,10 @@ define([
       var me = this, df = $.Deferred();
       // TODO(aramk) handle multi-language tags first by recursively calling compile for the appropriate language.
 
+      // TODO separate this into format and language
 
-
-      this.langs.compile(atts.lang, this.options).then(function(lang, regexes) {
-        input = lang.transformIndent(input);
+      this.langs.compile(String.camelToTitleCase(atts.lang), this.options).then(function(lang, regexes) {
+        input = format.transformIndent(input);
         var matches = {}, // Index to match map.
             isMultiPass = regexes.length > 1, // Whether we need to process the input more than once.
             remainder = input; // Contains the input minus any matched segments.
@@ -174,17 +185,17 @@ define([
 
 //        console.error('input', input);
 
-        $.each(regexes, function(i, regex) {
+        $.each(regexes, function(i, re) {
           var match,
               currIndex = 0,
               lastMatchIndex = null;
 //          console.error('regex', lang.info.name, regex);
 //          console.error('isMultiProcess', isMultiPass);
 //            console.error('regex', regex);
-          while ((match = regex.exec(remainder)) != null) {
+          while ((match = re.exec(remainder)) != null) {
 //            console.error('match', match);
             // TODO better to avoid linear search...
-            var matchIndex = lang.getMatchIndex(match),
+            var matchIndex = regex.getMatchIndex(match),
                 value = match[0];
 //            console.error('value', value, value.indexOf(lang.nullChar));
             if (isMultiPass && value.indexOf(lang.nullChar) >= 0) {
@@ -192,7 +203,8 @@ define([
               continue;
             }
             if (matchIndex !== null) {
-              var element = lang._elementsArrays[i][matchIndex - 1],
+              // TODO this should be in the lang
+              var element = lang.getElements().getElementAtIndex(i, matchIndex - 1),
                   matchStartIndex = match.index,
                   matchEndIndex = match.index + value.length;
               matches[matchStartIndex] = {
@@ -223,14 +235,14 @@ define([
           var match = matches[index],
               startIndex = match.startIndex,
               endIndex = match.endIndex,
-              regex = regexes[match.regexIndex];
+              re = regexes[match.regexIndex];
           // Copy preceding value.
           output += me.filterOutput(lang, input.slice(currIndex, startIndex));
           // Delegate transformation to language.
-          var segment = lang.transform(match.match[0], {
+          var segment = format.transform(match.match[0], {
             element: match.element,
             value: input,
-            regex: regex,
+            regex: re,
             startIndex: startIndex,
             match: match
           });
@@ -250,7 +262,7 @@ define([
     },
 
     filterOutput: function(lang, input) {
-      return lang.encodeEntities(input);
+      return format.encodeEntities(input);
     }
 
   };

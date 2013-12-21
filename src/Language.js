@@ -10,8 +10,7 @@ define([
   var Language = function(args) {
     $.extend(this, {
       _info: {},
-      _elements: null,
-      cssPrefix: defaults.pluginId
+      _elements: null
     });
   };
   $.extend(Language.prototype, {

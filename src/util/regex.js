@@ -1,6 +1,6 @@
 define([
-
-], function() {
+  'utility/Array'
+], function(Array) {
   return {
     modifiers: 'gmi',
     _backref: /\\(\d)\b/g,
@@ -63,30 +63,16 @@ define([
       // TODO convert "(?<!a)b" -> "[^a]b" but only works for a single character
       // TODO see http://stackoverflow.com/questions/641407/javascript-negative-lookbehind-equivalent
     },
-    argsArray: function() {
-      // Normalises a set of arguments into a single array of arguments.
-      var args = [];
-      $.each(arguments, function (i, arg) {
-        if (arg instanceof Array) {
-          $.each(arg, function (j, item) {
-            args.push(item);
-          });
-        } else {
-          args.push(arg);
-        }
-      });
-      return args;
-    },
     toStr: function(regex) {
       return regex instanceof RegExp ? regex.source : regex.toString();
     },
     alt: function(array, escape) {
-      array = this.argsArray.apply(this, arguments);
+      array = Array.argsArray.apply(this, arguments);
       escape = escape === undefined ? false : escape === true;
       this.altSort(array);
       var me = this;
       var cleaned = [];
-      array.forEach(function(item) {
+      $.each(array, function(i, item) {
         // Items can be undefined, ignore these.
         if (item) {
           // TODO we could prevent RegExp from being escaped, but this would make the API confusing.
@@ -121,11 +107,11 @@ define([
     },
     // Convenience methods.
     words: function(array) {
-      array = this.argsArray.apply(this, arguments);
+      array = Array.argsArray.apply(this, arguments);
       return '\\b(?:' + this.alt(array, true) + ')\\b';
     },
     esc: function(array) {
-      array = this.argsArray.apply(this, arguments);
+      array = Array.argsArray.apply(this, arguments);
       return this.alt(array, true);
     }
   };
