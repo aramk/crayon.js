@@ -47,6 +47,17 @@ define([
       }
       return matches;
     },
+    getMatchIndex: function(matches) {
+      if (matches.length > 1) {
+        for (var i = 1; i < matches.length; i++) {
+          var match = matches[i];
+          if (typeof match != 'undefined') {
+            return i;
+          }
+        }
+      }
+      return null;
+    },
     convertLookbehinds: function() {
       // TODO needs some more thought
       // TODO convert "(?<!a)b" -> "[^a]b" but only works for a single character

@@ -21,22 +21,21 @@ define([
     getInfo: function() {
       return this._info;
     },
-    compile: function() {
-
+    setElements: function (elements) {
+      this._elements = elements;
     },
+    getElements: function () {
+      return this._elements;
+    },
+    compile: function() {
+      if (this._elements) {
+        return this._elements.compile();
+      } else {
+        Log.error('No elements to compile', this);
+      }
+    }
   });
   return Language;
-  var lang = {
-    compile: function() { // TODO remove me arg
-      this._compilation = new Compilation();
-      this._compilation.setElements(this.elements);
-      return this._compilation.compile();
-    },
-    // TODO add to util, might also be too slow to use?
-    getTypeOf: function(/*anything*/ object) {
-      return Object.prototype.toString.call(object).slice(8, -1);
-    }
-  };
 
   // TODO remove
   var re = regex;

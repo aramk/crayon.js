@@ -1,29 +1,37 @@
 define([
   'jquery',
-  './regex'
-], function($, regex) {
-  var Elements = function (args) {
+  './regex',
+  'utility/Log'
+], function($, regex, Log) {
+  var Elements = function(args) {
     args = args || {};
     this._elements = [] || args.elements;
+    this.isLazy = args.isLazy;
+    this._compiled = null;
     // Stores a list of the elements used during compilation. The order allows us to determine which group was matched.
     this._elementsArrays = [];
   };
   $.extend(Elements.prototype, {
-    setElements: function (elements) {
+    setElements: function(elements) {
+      elements = elements instanceof Array ? elements : [elements];
       this._elements = elements;
+      this._compiled = null;
     },
-    getElements: function () {
+    getElements: function() {
       return this._elements;
     },
-    getElementsArray: function () {
-      return this.elements instanceof Array ? this.elements : [this.elements];
+    compile: function() {
+      if (!this._compiled) {
+        this._compiled = this._compile();
+      }
+      return this._compiled;
     },
-    compile: function () {
+    _compile: function() {
       var regexes = [], me = this;
       me._elementsArrays = [];
-      $.each(me.getElementsArray(), function(i, elements) {
+      $.each(me.getElements(), function(i, elements) {
         var elementArray = [];
-        regexes.push(me.compileElements(elements, function (id, elem) {
+        regexes.push(me.compileElements(elements, function(id, elem) {
           elementArray.push(id);
           return elem;
         }));
@@ -89,16 +97,16 @@ define([
       // Handle merging of the elements manually.
       delete deepCopy.elements;
       var deepMerge = $.extend(true, deepCopy, dest),
-        sourceElemArray = source.getElementsArray();
-      if (dest.extendMode === "merge" && sourceElemArray.length === 1) {
-        var sourceElements = $.extend(true, {}, sourceElemArray[0]);
-        var destElemArray = dest.getElementsArray();
-        if (destElemArray.length === 0 || !destElemArray[0]) {
+        sourceElems = source.getElements();
+      if (dest.extendMode === "merge" && sourceElems.length === 1) {
+        var sourceElements = $.extend(true, {}, sourceElems[0]);
+        var destElems = dest.getElements();
+        if (destElems.length === 0 || !destElems[0]) {
           // Destination elements set is empty, just copy across.
           dest.elements = $.extend(true, {}, sourceElements);
         } else {
           // Merge any missing elements into the first.
-          var destElements = destElemArray[0];
+          var destElements = destElems[0];
           for (var id in sourceElements) {
             if (!(id in destElements)) {
               destElements[id] = sourceElements[id];
@@ -109,7 +117,7 @@ define([
         if (!(dest.elements instanceof Array)) {
           dest.elements = [dest.elements];
         }
-        deepMerge.elements = dest.elements.concat(sourceElemArray);
+        deepMerge.elements = dest.elements.concat(sourceElems);
       }
 //      console.error('deepMerge', deepMerge);
       return deepMerge;
