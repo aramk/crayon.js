@@ -8,7 +8,7 @@
   ],
 //  name: 'main',
   name: '../lib/almond',
-  include: ['main', 'langs/default'],
-//  insertRequire: ['src/main'],
+  include: ['plugin', 'langs/default'],
+//  insertRequire: ['src/plugin'],
   out: 'build/crayon.min.js'
 })

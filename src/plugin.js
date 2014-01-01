@@ -1,19 +1,4 @@
-// RequireJS not used to ensure plugin is usable synchronously
 (function($, window, document, undefined) {
-
-  require.config({
-    baseUrl: 'src',
-    packages: [
-      {
-        name: 'langs',
-        location: '../langs'
-      },
-      {
-        name: 'utility',
-        location: '../lib/utility'
-      }
-    ]
-  });
 
   // Instantiate the plugin for jQuery
   var name = 'crayon';
@@ -23,7 +8,7 @@
       if (!$.data(this, 'plugin_' + name)) {
         $.data(this, 'plugin_' + name, (function() {
           // Note: This loads asynchronously
-          require(['Crayon'], function(Crayon) {
+          require(['core/Crayon'], function(Crayon) {
             options = $.extend(options, {
               // TODO how do we configure this?
               baseURL: ''

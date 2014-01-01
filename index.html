@@ -15,7 +15,8 @@
   <script>require = undefined</script>
   <script src="lib/require.js"></script>
   <script src="lib/jquery.js"></script>
-  <script src="src/main.js"></script>
+  <script src="src/config.js"></script>
+  <script src="src/plugin.js"></script>
 
   <!-- Production -->
   <!--<link rel="stylesheet" type="text/css" href="build/crayon.min.css" />-->
@@ -23,7 +24,7 @@
   <!--<script src="build/crayon.min.js"></script>-->
 
   <script>
-    $(function () {
+    $(function() {
       $('body').crayon({});
     });
   </script>
@@ -31,41 +32,70 @@
 </head>
 <body>
 
+
   <div style="width: 800px; margin: 0 auto;">
     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-<pre data-crayon="theme:classic; mark:1,2-4" title="Sample">
-// A sample class
-class Human {
-	private int age = 0;
-	public void birthday() {
-		age++;
-		print('Happy Birthday!');
-    if (age == 40) {
-      print('Bad luck!');
+
+    <!--
+        <pre data-crayon="theme:classic; mark:1,2-4" title="Sample">
+    // A sample class
+    class Human {
+      private int age = 0;
+      public void birthday() {
+        age++;
+        print('Happy Birthday!');
+        if (age == 40) {
+          print('Bad luck!');
+        }
+      }
     }
-	}
-}
-</pre>
+        </pre>
+    -->
+
     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-<pre data-crayon="lang:php; theme:classic; mark:1,2-4" title="Sample">
-&lt;?php
-// A sample class
-# Another comment.
-&lt;&lt;&lt;EOT
-  wefwef
-EOT
-__CLASS__
-class Human {
-	$age = 0;
-	function birthday() {
-		$age++;
-		echo 'Happy Birthday!';
-	}
-}
-?&gt;
-TEST::
-WFWEFWEF
-</pre>
+    <pre data-crayon="lang: php; theme: classic; mark: 1,2-4" title="Sample">
+    &lt;?php
+    // A sample class
+    # Another comment.
+    &lt;&lt;&lt;EOT
+    wefwef
+    EOT
+    __CLASS__
+    class Human {
+      $age = 0;
+      function birthday() {
+        $age++;
+        echo 'Happy Birthday!';
+      }
+    }
+    ?&gt;
+    TEST::
+    WFWEFWEF
+    </pre>
+
+    <!--<pre data-crayon="theme:classic; mark:1,2-4" title="Sample">-->
+    <!--&lt;?php-->
+    <!--// A sample class-->
+    <!--# Another comment.-->
+    <!--&lt;script&gt;-->
+    <!--var str = "123";-->
+    <!--&lt;/script&gt;-->
+    <!--&lt;&lt;&lt;EOT-->
+    <!--wefwef-->
+    <!--EOT-->
+    <!--__CLASS__-->
+    <!--class Human {-->
+    <!--$age = 0;-->
+    <!--function birthday() {-->
+    <!--$age++;-->
+    <!--echo 'Happy Birthday!';-->
+    <!--}-->
+    <!--}-->
+    <!--?&gt;-->
+    <!--TEST::-->
+    <!--WFWEFWEF-->
+    <!--</pre>-->
+
   </div>
 
 </body>
