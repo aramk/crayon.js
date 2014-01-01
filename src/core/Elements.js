@@ -15,14 +15,18 @@ define([
       this._elementsArrays = [];
     },
 
-    setElements: function(elements) {
+    set: function(elements) {
       elements = elements instanceof Array ? elements : [elements];
       this._elements = elements;
       this._compiled = null;
     },
 
-    getElements: function() {
+    get: function() {
       return this._elements;
+    },
+
+    getAtIndex: function(index) {
+      return this._elements[index];
     },
 
     getElementAtIndex: function(i, j) {
@@ -39,7 +43,7 @@ define([
     _compile: function() {
       var regexes = [], me = this;
       me._elementsArrays = [];
-      $.each(me.getElements(), function(i, elements) {
+      $.each(me.get(), function(i, elements) {
         var elementArray = [];
         regexes.push(me.compileElements(elements, function(id, elem) {
           elementArray.push(id);

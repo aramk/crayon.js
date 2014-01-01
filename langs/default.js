@@ -10,7 +10,7 @@ define([
     init: function () {
       this._super();
       var elements = new Elements();
-      elements.setElements({
+      elements.set({
         comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,
         preprocessor: /(#.*?$)/,
         tag: null,
