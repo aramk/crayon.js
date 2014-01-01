@@ -20,18 +20,22 @@ define([
       this._elements = elements;
       this._compiled = null;
     },
+
     getElements: function() {
       return this._elements;
     },
+
     getElementAtIndex: function(i, j) {
       return this._elementsArrays[i][j];
     },
+
     compile: function() {
       if (!this._compiled) {
         this._compiled = this._compile();
       }
       return this._compiled;
     },
+
     _compile: function() {
       var regexes = [], me = this;
       me._elementsArrays = [];
@@ -45,6 +49,7 @@ define([
       });
       return regexes;
     },
+
     compileElements: function(elements, map) {
       var regexStr = '', me = this;
       // TODO separate the logic from the data (language definition) while still allowing both to be overridden.
@@ -72,6 +77,7 @@ define([
       // TODO support more than one
       return new RegExp(regexStr, elements._modifiers || regex.modifiers);
     },
+
     compileElement: function(id, elem) {
       var me = this;
       if (elem === null || typeof elem === 'undefined') {
@@ -90,13 +96,17 @@ define([
       elem = regex.replaceDots(elem);
       return (new RegExp(elem)).source;
     },
+
+    isCompiled: function () {
+      return !!this._compiled;
+    },
+
     // Changes the behaviour when extending.
     // "add" will add element sets of the source language into the destination language. (recommended/default)
     // "merge" will merge any missing elements from the source language into the destination language for only the first elements set. If more than one elements set exists for the source language, merging is too ambiguous and this option defaults to "add".
     extendMode: "add",
-    _compilation: null,
     extend: function(dest) {
-      // TODO separate from the language?
+      // FIXME make this OOP
       var source = this;
       // Clone this language and deep merge the given one into it.
       var deepCopy = $.extend(true, {}, source);

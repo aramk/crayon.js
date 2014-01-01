@@ -2,11 +2,10 @@ define([
   'defaults'
 ], function(defaults) {
   return {
-    // Methods
     attrParser: function(attStr) {
       var match, atts = {};
       while ((match = defaults.reAttr.exec(attStr)) != null) {
-        atts[match[1]] = match[2];
+        atts[match[1].trim()] = match[2].trim();
       }
       return atts;
     },

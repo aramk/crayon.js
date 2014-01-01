@@ -48,10 +48,7 @@ define([
         var $node = $(node);
         var atts = $(node).attr(me.options.attrSelector);
         var parsedAtts = dom.attrParser(atts);
-//        node.crayon = {
-//          atts: parsedAtts
-//        };
-        Log.info('Attributes for node', this.element, parsedAtts);
+        Log.info('Attributes for node', me.element, parsedAtts);
         var input = dom.getTextValue(node);
         input = format.transformIndent(input);
         me.compile({
@@ -101,14 +98,14 @@ define([
         if (lang) {
           df.resolve(lang);
         } else {
-          require(['langs/' + id], function(lang) {
-            if (lang) {
-              Log.info('Language loaded', id, lang);
+          require(['langs/' + id], function(LangClass) {
+            if (LangClass) {
+              Log.info('Language loaded', id);
+              var lang = new LangClass();
               me.setCacheLang(id, lang);
-              lang._compiled = null;
               df.resolve(lang);
             } else {
-              Log.error('Language failed to load', id, lang);
+              Log.error('Language failed to load', id, LangClass);
               df.reject(null);
             }
           }, function(err) {
