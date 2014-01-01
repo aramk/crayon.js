@@ -6,6 +6,8 @@ define([
 ], function($, Class, regex, Log) {
   return Class.extend({
 
+    _reReservedPrefix: /^_/,
+
     init: function(args) {
       args = args || {};
       this._elements = [] || args.elements;
@@ -58,7 +60,7 @@ define([
       var regexStr = '', me = this;
       // TODO separate the logic from the data (language definition) while still allowing both to be overridden.
       for (var id in elements) {
-        if (id.match(/^_/)) {
+        if (id.match(this._reReservedPrefix)) {
           // Ignore any elements with underscore prefix. These can be used to define modifiers for each set of elements.
           continue;
         }
@@ -115,20 +117,25 @@ define([
       return this;
     },
 
-    merge: function(index) {
-      var isFirstArgAnIndex = typeof index === 'number';
-      var mergeIndex = isFirstArgAnIndex ? index : 0;
-      if (mergeIndex >= this._elements.length) {
-        throw new Error('Elements index ' + mergeIndex + ' does not exist. Cannot merge.');
-      }
-      var args = Array.prototype.slice.call(arguments),
-        elementsArray = args.slice(isFirstArgAnIndex ? 1 : 0),
-        me = this;
-      $.each(elementsArray, function(i, elements) {
-        $.extend(me._elements[mergeIndex], elements);
+    merge: function(elements, args) {
+      args = $.extend(args, {
+        index: 0,
+        replace: false
       });
+      if (args.index >= this._elements.length) {
+        throw new Error('Elements index ' + args.index + ' does not exist. Cannot merge.');
+      }
+      var existingElements = this._elements[args.index];
+      for (var id in elements) {
+        var existingElement = existingElements[id];
+        if (existingElement && !id.match(this._reReservedPrefix) && !args.replace) {
+          existingElements[id] = regex.alt(existingElements[id], elements[id]);
+        } else {
+          existingElements[id] = elements[id];
+        }
+      }
       return this;
     }
 
-  });
+  })
 });

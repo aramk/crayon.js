@@ -3,8 +3,6 @@ define([
   'util/regex',
   'utility/Log'
 ], function(Default, regex, Log) {
-  // TODO(aramk) hide these with getters.
-  console.error('regex', regex);
   return Default.extend({
 
     init: function() {
@@ -12,20 +10,17 @@ define([
       this.setInfo({
         name: 'PHP'
       });
-      var elements = this.getElements().getAtIndex(0);
       this.getElements().merge({
-        // TODO(aramk) merging should call alt on the existing value automatically.
-        comment: regex.alt(elements.comment, '\#.*?$'),
-        string: regex.alt(elements.string, '<<<EOT.*?^EOT'),
-        // TODO(aramk) this isn't handled correctly
-        keyword: regex.alt(elements.keyword, regex.words(
+        comment: '\#.*?$',
+        string: '<<<EOT.*?^EOT',
+        keyword: regex.words(
           ['unset', 'print', 'return', 'require_once', 'require', 'list', 'isset', 'include_once',
             'include', 'eval', 'exit', 'empty', 'echo', 'die'],
           ['__NAMESPACE__', '__METHOD__', '__FUNCTION__', '__LINE__', '__FILE__', '__DIR__',
-            '__CLASS__'])),
-        tag: regex.alt(elements.tag, /<\?php\b|<\?|\?>/),
-        variable: regex.alt(elements.variable, /\$[a-z_]\w*\b/),
-        entity: regex.alt(elements.entity, regex.words(
+            '__CLASS__']),
+        tag: /<\?php\b|<\?|\?>/,
+        variable: /\$[a-z_]\w*\b/,
+        entity: regex.alt(regex.words(
           ['__COMPILER_HALT_OFFSET__', 'YESSTR', 'YESEXPR', 'T_FMT_AMPM', 'T_FMT', 'THOUSEP',
             'THOUSANDS_SEP', 'STR_PAD_RIGHT', 'STR_PAD_LEFT', 'STR_PAD_BOTH', 'SORT_STRING',
             'SORT_REGULAR', 'SORT_NUMERIC', 'SORT_DESC', 'SORT_ASC', 'SEEK_SET', 'SEEK_END',
@@ -75,12 +70,12 @@ define([
             'ABMON_5', 'ABMON_4', 'ABMON_3', 'ABMON_2', 'ABMON_12', 'ABMON_11', 'ABMON_10',
             'ABMON_1', 'ABDAY_7', 'ABDAY_6', 'ABDAY_5', 'ABDAY_4', 'ABDAY_3', 'ABDAY_2', 'ABDAY_1'
           ]), /\b[a-z_]\w*::/),
-        identifier: regex.alt(elements.identifier, /\b[a-z_]\w*\b\s*(?=\([^\)]*\))/),
-        constant: regex.alt(elements.constant, /\b[A-Z_]*\b/)
+        identifier: /\b[a-z_]\w*\b\s*(?=\([^\)]*\))/,
+        constant: /\b[A-Z_]*\b/
       });
       this.getElements().append({
         _modifiers: 'gm',
-        constant: regex.alt(elements.constant, /\b[A-Z_]*\b/)
+        constant: /\b[A-Z_]*\b/
       });
     }
 
