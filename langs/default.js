@@ -8,6 +8,7 @@ define([
   return Language.extend({
 
     init: function () {
+      this._super();
       var elements = new Elements();
       elements.setElements({
         comment: /(\/\*.*?\*\/)|(\/\/.*?$)/,

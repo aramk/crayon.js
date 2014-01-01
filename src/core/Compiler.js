@@ -46,7 +46,7 @@ define([
           // TODO better to avoid linear search...
           var matchIndex = regex.getMatchIndex(match),
             value = match[0];
-          if (isMultiPass && value.indexOf(this.options.nullChar) >= 0) {
+          if (isMultiPass && value.indexOf(me.options.nullChar) >= 0) {
             Log.debug('Duplicate match, ignoring', value);
             continue;
           }
@@ -64,7 +64,7 @@ define([
             };
             currIndex = matchEndIndex;
             if (isMultiPass) {
-              var blank = value.replace(/\S/gm, this.options.nullChar);
+              var blank = value.replace(/\S/gm, me.options.nullChar);
               remainder = String.splice(remainder, matchStartIndex, matchEndIndex, blank);
             }
           }

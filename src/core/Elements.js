@@ -97,46 +97,33 @@ define([
       return (new RegExp(elem)).source;
     },
 
-    isCompiled: function () {
+    isCompiled: function() {
       return !!this._compiled;
     },
 
-    // Changes the behaviour when extending.
-    // "add" will add element sets of the source language into the destination language. (recommended/default)
-    // "merge" will merge any missing elements from the source language into the destination language for only the first elements set. If more than one elements set exists for the source language, merging is too ambiguous and this option defaults to "add".
-    extendMode: "add",
-    extend: function(dest) {
-      // FIXME make this OOP
-      var source = this;
-      // Clone this language and deep merge the given one into it.
-      var deepCopy = $.extend(true, {}, source);
-      // Handle merging of the elements manually.
-      delete deepCopy.elements;
-      var deepMerge = $.extend(true, deepCopy, dest),
-        sourceElems = source.getElements();
-      if (dest.extendMode === "merge" && sourceElems.length === 1) {
-        var sourceElements = $.extend(true, {}, sourceElems[0]);
-        var destElems = dest.getElements();
-        if (destElems.length === 0 || !destElems[0]) {
-          // Destination elements set is empty, just copy across.
-          dest.elements = $.extend(true, {}, sourceElements);
-        } else {
-          // Merge any missing elements into the first.
-          var destElements = destElems[0];
-          for (var id in sourceElements) {
-            if (!(id in destElements)) {
-              destElements[id] = sourceElements[id];
-            }
-          }
-        }
-      } else {
-        if (!(dest.elements instanceof Array)) {
-          dest.elements = [dest.elements];
-        }
-        deepMerge.elements = dest.elements.concat(sourceElems);
+    prepend: function() {
+      this._elements.unshift.apply(this._elements, arguments);
+      return this;
+    },
+
+    append: function() {
+      this._elements.push.apply(this._elements, arguments);
+      return this;
+    },
+
+    merge: function(index) {
+      var isFirstArgAnIndex = typeof index === 'number';
+      var mergeIndex = isFirstArgAnIndex ? index : 0;
+      if (mergeIndex >= this._elements.length) {
+        throw new Error('Elements index ' + mergeIndex + ' does not exist. Cannot merge.');
       }
-//      console.error('deepMerge', deepMerge);
-      return deepMerge;
+      var args = Array.prototype.slice.call(arguments),
+        elementsArray = args.slice(isFirstArgAnIndex ? 1 : 0),
+        me = this;
+      $.each(elementsArray, function(i, elements) {
+        $.extend(me._elements[mergeIndex], elements);
+      });
+      return this;
     }
 
   });

@@ -1,10 +1,31 @@
 define([
   './Default',
+  'util/regex',
   'utility/Log'
-], function(Default, Log) {
+], function(Default, regex, Log) {
   // TODO(aramk) hide these with getters.
-  var re = Default.regex, elem = Default.elements;
+  var elem = Default.elements;
+  console.error('regex', regex);
   return Default.extend({
+
+    init: function () {
+      this._super();
+      this.setInfo({
+        name: 'PHP'
+      });
+      this.getElements().prepend({
+        // TODO make this more convenient.
+        tag: regex.alt(this.getElements().getElements()[0].tag, /<\?php\b|<\?|\?>/)
+      });
+      this.getElements().append({
+        // TODO make this more convenient.
+        tag: regex.alt(this.getElements().getElements()[0].tag, /<\?php\b|<\?|\?>/)
+      });
+      this.getElements().merge({
+        // TODO make this more convenient.
+        test: /123/
+      });
+    }
 
 //    info: {
 //      name: 'PHP'
