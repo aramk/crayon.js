@@ -1,7 +1,3 @@
-//var chai = require('chai'),
-//  expect = chai.expect;
-//chai.Assertion.includeStack = true;
-
 describe("DOM Tests", function () {
   var el = document.createElement("div");
   el.id = "myDiv";
