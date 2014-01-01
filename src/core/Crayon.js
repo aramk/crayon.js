@@ -3,8 +3,8 @@ define([
   'util/jquery',
   'defaults',
   'lib/Class',
-  'Renderer',
-  'Compiler',
+  './Renderer',
+  './Compiler',
   'langs/Default', // TODO put in separate class
   'langs/tags',
   // TODO rename utils to distinguish

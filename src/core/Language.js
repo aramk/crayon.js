@@ -3,7 +3,7 @@ define([
   'lib/Class',
   'util/regex',
   'util/format',
-  'Elements',
+  './Elements',
   'defaults',
   'utility/Log'
 ], function($, Class, regex, format, Elements, defaults, Log) {

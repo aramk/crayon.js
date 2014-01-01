@@ -8,7 +8,7 @@
       if (!$.data(this, 'plugin_' + name)) {
         $.data(this, 'plugin_' + name, (function() {
           // Note: This loads asynchronously
-          require(['Crayon'], function(Crayon) {
+          require(['core/Crayon'], function(Crayon) {
             options = $.extend(options, {
               // TODO how do we configure this?
               baseURL: ''

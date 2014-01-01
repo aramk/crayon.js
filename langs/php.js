@@ -1,9 +1,10 @@
 define([
-  './default',
+  './Default',
   'utility/Log'
-], function(lang, Log) {
-  var re = lang.regex, elem = lang.elements;
-  return lang.extend({
+], function(Default, Log) {
+  // TODO(aramk) hide these with getters.
+  var re = Default.regex, elem = Default.elements;
+  return Default.extend({
     info: {
       name: 'PHP'
     },

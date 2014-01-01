@@ -1,8 +1,8 @@
 define([
   'util/jquery',
   'util/regex',
-  'Language',
-  'Elements',
+  'core/Language',
+  'core/Elements',
   'utility/Log'
 ], function($, regex, Language, Elements, Log) {
   return Language.extend({
