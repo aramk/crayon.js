@@ -1,0 +1,25 @@
+{
+  "name": "crayon-syntax",
+  "version": "0.1.0-beta",
+  "description": "A syntax highlighter supporting many themes, languages and settings.",
+  "keywords": ["syntax", "highlighter", "syntax highlighter"],
+  "homepage": "https://github.com/aramk/crayon.js",
+  "bugs": {
+    "url": "https://github.com/aramk/crayon.js/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Aram Kocharyan",
+    "email": "crayon.syntax@gmail.com"
+  },
+  "main": "src/plugin",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aramk/crayon.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*"
+  }
+}

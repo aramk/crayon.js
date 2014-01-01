@@ -1,8 +1,7 @@
 define([
   './Default',
-  'util/regex',
-  'utility/Log'
-], function(Default, regex, Log) {
+  'util/regex'
+], function(Default, regex) {
   return Default.extend({
 
     init: function() {
