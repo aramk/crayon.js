@@ -1,17 +1,20 @@
 define([
-  'jquery',
+  'util/jquery',
+  'lib/Class',
   'util/regex',
   'utility/Log'
-], function($, regex, Log) {
-  var Elements = function(args) {
-    args = args || {};
-    this._elements = [] || args.elements;
-    this.isLazy = args.isLazy;
-    this._compiled = null;
-    // Array of arrays of element IDs. Used for looking up their index.
-    this._elementsArrays = [];
-  };
-  $.extend(Elements.prototype, {
+], function($, Class, regex, Log) {
+  return Class.extend({
+
+    init: function(args) {
+      args = args || {};
+      this._elements = [] || args.elements;
+      this.isLazy = args.isLazy;
+      this._compiled = null;
+      // Array of arrays of element IDs. Used for looking up their index.
+      this._elementsArrays = [];
+    },
+
     setElements: function(elements) {
       elements = elements instanceof Array ? elements : [elements];
       this._elements = elements;
@@ -125,6 +128,6 @@ define([
 //      console.error('deepMerge', deepMerge);
       return deepMerge;
     }
+
   });
-  return Elements;
 });

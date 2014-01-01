@@ -1,19 +1,21 @@
 define([
-  'jquery',
+  'util/jquery',
+  'lib/Class',
   'util/regex',
   'util/format',
   'Elements',
   'defaults',
   'utility/Log'
-], function($, regex, format, Elements, defaults, Log) {
-  // TODO we need to extend this for other languages and override
-  var Language = function(args) {
-    $.extend(this, {
-      _info: {},
-      _elements: null
-    });
-  };
-  $.extend(Language.prototype, {
+], function($, Class, regex, format, Elements, defaults, Log) {
+  return Class.extend({
+
+    init: function(args) {
+      $.extend(this, {
+        _info: {},
+        _elements: null
+      });
+    },
+
     setInfo: function(info) {
       this._info = info;
     },
@@ -33,6 +35,6 @@ define([
         Log.error('No elements to compile', this);
       }
     }
+
   });
-  return Language;
 });

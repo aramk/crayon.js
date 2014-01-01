@@ -1,16 +1,16 @@
 define([
-  'jquery',
+  'lib/Class',
   'defaults',
+  'util/jquery',
   'util/dom',
   'util/format',
   'utility/Log'
-], function($, defaults, dom, format, Log) {
-  
-  var Renderer = function (options) {
-    this.options = options || defaults;
-  };
-  
-  $.extend(Renderer.prototype, {
+], function(Class, defaults, $, dom, format, Log) {
+  return Class.extend({
+
+    init: function (options) {
+      this.options = options || defaults;
+    },
 
     render: function (args) {
       var output = args.output,
@@ -32,7 +32,4 @@ define([
     }
 
   });
-
-  return Renderer;
-
 });

@@ -1,7 +1,8 @@
 define([
   'module',
-  'jquery',
+  'util/jquery',
   'defaults',
+  'lib/Class',
   'Renderer',
   'Compiler',
   'langs/Default', // TODO put in separate class
@@ -12,28 +13,23 @@ define([
   'util/regex',
   'utility/String',
   'utility/Log' // TODO prefix with "crayon"
-], function(module, $, defaults, Renderer, Compiler, Default, tags, dom, format, regex, String,
-            Log) {
-
-  var Crayon = function(element, options) {
-    this.element = element;
-    this.options = $.extend({}, defaults, options);
-    this.renderer = new Renderer(this.options);
-    this.compiler = new Compiler(this.options);
-    this.init();
-    Log.info('Crayon init, options:', this.options, 'element:', this.element);
-  };
-
-  Crayon.prototype = {
+], function(module, $, defaults, Class, Renderer, Compiler, Default, tags, dom, format, regex,
+            String, Log) {
+  return Class.extend({
 
     nodes: null,
 
-    init: function() {
+    init: function(element, options) {
+      this.element = element;
+      this.options = $.extend({}, defaults, options);
+      this.renderer = new Renderer(this.options);
+      this.compiler = new Compiler(this.options);
       var me = this;
       me.themes.init(me.options);
       me.langs.init(me.options);
       me.nodes = me.query();
       me.highlight(me.nodes);
+      Log.info('Crayon init, options:', this.options, 'element:', this.element);
     },
 
     /**
@@ -169,8 +165,5 @@ define([
       }
     }
 
-  };
-
-  return Crayon;
-
+  });
 });

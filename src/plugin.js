@@ -1,4 +1,3 @@
-// RequireJS not used to ensure plugin is usable synchronously
 (function($, window, document, undefined) {
 
   // Instantiate the plugin for jQuery

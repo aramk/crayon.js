@@ -1,16 +1,18 @@
 define([
   'defaults',
+  'lib/Class',
   'util/regex',
   'util/format',
   'utility/String',
   'utility/Log'
-], function(defaults, regex, format, String, Log) {
+], function(defaults, Class, regex, format, String, Log) {
+  return Class.extend({
 
-  var Compiler = function(options) {
-    this.options = options || defaults;
-  };
+    options: null,
 
-  $.extend(Compiler.prototype, {
+    init: function(options) {
+      this.options = options || defaults;
+    },
 
     compile: function(args) {
       var me = this,
@@ -120,7 +122,4 @@ define([
     }
 
   });
-
-  return Compiler;
-
 });

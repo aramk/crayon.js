@@ -1,8 +1,11 @@
 define([
-  'jquery',
+  'util/jquery',
+  'lib/Class',
   'defaults'
-], function($, defaults) {
-  return {
-    t
-  };
+], function($, Class, defaults) {
+  return Class.extend({
+
+    // TODO
+
+  });
 });

@@ -7,6 +7,10 @@ require.config({
     },
     'util',
     {
+      name: 'lib',
+      location: '../lib'
+    },
+    {
       name: 'utility',
       location: '../lib/utility'
     }
