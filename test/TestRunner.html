@@ -8,13 +8,21 @@
   <div id="mocha"></div>
   <script src="../node_modules/mocha/mocha.js"></script>
   <script src="../node_modules/chai/chai.js"></script>
+  <script src="../node_modules/requirejs/require.js"></script>
+  <script src="../src/config.js"></script>
+  <script>
+    require.config({
+      baseUrl: '../src'
+    });
+  </script>
+  <script src="../node_modules/jquery/dist/jquery.min.js"></script>
   <script>
     mocha.ui('bdd');
     mocha.reporter('html');
     var expect = chai.expect;
   </script>
   <!-- Add DOM tests here. -->
-  <script src="sample-dom.js"></script>
+  <script src="dom.js"></script>
   <script>
     if (window.mochaPhantomJS) {
       mochaPhantomJS.run();

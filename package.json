@@ -27,6 +27,8 @@
     "mocha": "*",
     "grunt": "~0.4.2",
     "grunt-mocha": "~0.4.7",
-    "grunt-mocha-test": "~0.8.1"
+    "grunt-mocha-test": "~0.8.1",
+    "jquery": "~2.1.0-beta3",
+    "requirejs": "~2.1.9"
   }
 }
