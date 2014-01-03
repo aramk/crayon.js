@@ -27,7 +27,7 @@
     $(function () {
       var elems = $('body').crayon({});
       setTimeout(function () {
-        console.error('elems', $.data(elems));
+        console.error('elems', elems, $.data(elems));
       }, 2000);
     });
   </script>

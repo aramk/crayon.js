@@ -21,6 +21,7 @@ define([
     init: function (element, options) {
       this.element = element;
       this.options = $.extend({}, defaults, options);
+      Log.info('Crayon init, options:', this.options, 'element:', this.element);
       this.renderer = new Renderer(this.options);
       this.compiler = new Compiler(this.options);
       var me = this;
@@ -28,7 +29,6 @@ define([
       me.langs.init(me.options);
       me.nodes = me.query();
       me.highlight(me.nodes);
-      Log.info('Crayon init, options:', this.options, 'element:', this.element);
     },
 
     /**
@@ -54,9 +54,12 @@ define([
           input: input,
           langId: parsedAtts.lang
         }).then(function (output) {
+            if (input.length > 0 && (!output || output.length === 0)) {
+              Log.error('Compilation returned no output', output);
+            }
               me.renderer.render({
                 node: node,
-                output: output,
+                content: output,
                 atts: parsedAtts
               });
               // TODO implement
