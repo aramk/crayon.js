@@ -24,14 +24,16 @@
   <!--<script src="build/crayon.min.js"></script>-->
 
   <script>
-    $(function() {
-      $('body').crayon({});
+    $(function () {
+      var elems = $('body').crayon({});
+      setTimeout(function () {
+        console.error('elems', elems, $.data(elems));
+      }, 2000);
     });
   </script>
 
 </head>
 <body>
-
 
   <div style="width: 800px; margin: 0 auto;">
     <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>

@@ -2,7 +2,11 @@
   "name": "crayon-syntax",
   "version": "0.1.0-beta",
   "description": "A syntax highlighter supporting many themes, languages and settings.",
-  "keywords": ["syntax", "highlighter", "syntax highlighter"],
+  "keywords": [
+    "syntax",
+    "highlighter",
+    "syntax highlighter"
+  ],
   "homepage": "https://github.com/aramk/crayon.js",
   "bugs": {
     "url": "https://github.com/aramk/crayon.js/issues"
@@ -20,6 +24,11 @@
   "dependencies": {},
   "devDependencies": {
     "chai": "*",
-    "mocha": "*"
+    "mocha": "*",
+    "grunt": "~0.4.2",
+    "grunt-mocha": "~0.4.7",
+    "grunt-mocha-test": "~0.8.1",
+    "jquery": "~2.1.0-beta3",
+    "requirejs": "~2.1.9"
   }
 }

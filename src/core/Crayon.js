@@ -22,14 +22,13 @@ define([
     init: function(element, options) {
       this.element = element;
       this.options = $.extend({}, defaults, options);
+      Log.info('Crayon init, options:', this.options, 'element:', this.element);
       this.renderer = new Renderer(this.options);
       this.compiler = new Compiler(this.options);
       var me = this;
       me.themes.init(me.options);
       me.langs.init(me.options);
       me.nodes = me.query();
-      me.highlight(me.nodes);
-      Log.info('Crayon init, options:', this.options, 'element:', this.element);
     },
 
     /**
@@ -42,9 +41,13 @@ define([
 
     // TODO separate out code which manipulates or compiles
     highlight: function(nodes) {
+      nodes = nodes || this.nodes;
+      console.error('nodes', nodes.html());
       var me = this;
-      nodes.each(function(i, node) {
-
+      var dfs = [];
+      $.each(nodes, function(i, node) {
+        var df = $.Deferred();
+        dfs.push(df);
         var $node = $(node);
         var atts = $(node).attr(me.options.attrSelector);
         var parsedAtts = dom.attrParser(atts);
@@ -55,25 +58,31 @@ define([
           input: input,
           langId: parsedAtts.lang
         }).then(function(output) {
+            if (input.length > 0 && (!output || output.length === 0)) {
+              Log.error('Compilation returned no output', output);
+            }
             me.renderer.render({
               node: node,
-              output: output,
+              content: output,
               atts: parsedAtts
             });
+            df.resolve();
             // TODO implement
             // me.themes.load(themeId);
           }, function(err) {
             // TODO(aramk) handle this better?
             Log.error('Failed to compile', node, err);
+            df.reject(err);
           });
       });
+      return $.when(dfs);
     },
 
     compile: function(args) {
       var me = this;
       return me.langs.get(args.langId || this.options.defaultLangId).then(function(lang) {
         args.lang = lang;
-        return me.compiler.compile(args)
+        return me.compiler.compile(args);
       });
     },
 
