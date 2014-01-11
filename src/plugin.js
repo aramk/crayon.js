@@ -1,30 +1,34 @@
 (function($, window, document, undefined) {
 
   // Instantiate the plugin for jQuery
-  var name = 'crayon';
+  var name = 'crayon',
+    crayon;
+
   $.fn[name] = function(options) {
     var query = this,
-      allDf = $.Deferred(),
-      dfs = [],
-      crayons = [];
+      results = [],
+      resultDf = $.Deferred(),
+      dfs = [];
     query.each(function() {
-      var df = $.Deferred();
+      var df = $.Deferred(),
+        node = this;
       dfs.push(df);
       // Only runs once per node.
       if (!$.data(this, 'plugin_' + name)) {
         $.data(this, 'plugin_' + name, (function() {
-          // Note: This loads asynchronously
           require(['core/Crayon'], function(Crayon) {
             options = $.extend(options, {
               // TODO how do we configure this?
               baseURL: ''
             });
-            // TODO save crayon instance?
-            var crayon = new Crayon(query, options);
-            crayon._name = name;
-            crayons.push(crayon);
-            crayon.highlight().then(function() {
-              df.resolve(crayon);
+            if (!crayon) {
+              crayon = new Crayon(options);
+              crayon._name = name;
+            }
+            $.data(node, 'plugin_' + name + '_instance', crayon);
+            crayon.highlight(query).then(function(result) {
+              results.push(result);
+              df.resolve(result);
             }, function(err) {
               df.reject(err);
             });
@@ -34,12 +38,12 @@
         })());
       }
     });
-    $.when.apply($, dfs).then(function() {
-      allDf.resolve(crayons);
-    }, function(err) {
-      allDf.reject(err);
+    $.when.apply($, dfs).then(function () {
+      resultDf.resolve(results);
+    }, function (err) {
+      resultDf.reject(err);
     });
-    return allDf;
+    return resultDf;
   };
 
 })(jQuery, window, document);

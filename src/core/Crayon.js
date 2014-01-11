@@ -17,12 +17,9 @@ define([
             String, Log) {
   return Class.extend({
 
-    nodes: null,
-
-    init: function(element, options) {
-      this.element = element;
+    init: function(options) {
       this.options = $.extend({}, defaults, options);
-      Log.info('Crayon init, options:', this.options, 'element:', this.element);
+      Log.info('Crayon init, options:', this.options);
       this.renderer = new Renderer(this.options);
       this.compiler = new Compiler(this.options);
       var me = this;
@@ -35,24 +32,26 @@ define([
      * @returns {?HTMLElement[]} The elements within the selected element which
      * match our selector for finding code.
      */
-    query: function() {
-      return $(this.options.selector, this.element);
+    query: function(nodes) {
+      return $(this.options.selector, nodes);
     },
 
-    // TODO separate out code which manipulates or compiles
     highlight: function(nodes) {
-      nodes = nodes || this.nodes;
+      // TODO(aramk) handle case of getting string.
       console.error('nodes', nodes.html());
-      var me = this;
-      var dfs = [];
-      $.each(nodes, function(i, node) {
+      var me = this,
+        dfs = [],
+        dfAll = $.Deferred(),
+        $elems = me.query($(nodes));
+
+      $elems.each(function(i, elem) {
         var df = $.Deferred();
         dfs.push(df);
-        var $node = $(node);
-        var atts = $(node).attr(me.options.attrSelector);
+        var $elem = $(elem);
+        var atts = $elem.attr(me.options.attrSelector);
         var parsedAtts = dom.attrParser(atts);
-        Log.info('Attributes for node', me.element, parsedAtts);
-        var input = dom.getTextValue(node);
+        Log.debug('Attributes for elem', $elem, parsedAtts);
+        var input = dom.getTextValue(elem);
         input = format.transformIndent(input);
         me.compile({
           input: input,
@@ -62,20 +61,25 @@ define([
               Log.error('Compilation returned no output', output);
             }
             me.renderer.render({
-              node: node,
+              node: elem,
               content: output,
               atts: parsedAtts
             });
-            df.resolve();
+            df.resolve(elem);
             // TODO implement
             // me.themes.load(themeId);
           }, function(err) {
             // TODO(aramk) handle this better?
-            Log.error('Failed to compile', node, err);
+            Log.error('Failed to compile', elem, err);
             df.reject(err);
           });
       });
-      return $.when(dfs);
+      $.when(dfs).then(function () {
+        dfAll.resolve($elems);
+      }, function (err) {
+        dfAll.reject(err);
+      });
+      return dfAll;
     },
 
     compile: function(args) {
