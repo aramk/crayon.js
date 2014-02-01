@@ -12,7 +12,7 @@ require.config({
     },
     {
       name: 'utility',
-      location: '../lib/utility'
+      location: '../bower_components/utility'
     }
   ]
 });

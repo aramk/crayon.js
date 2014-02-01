@@ -1,0 +1,14 @@
+{
+  "name": "crayon-syntax",
+  "version": "0.1.0-beta",
+  "dependencies": {
+    "jquery": "~2.0.3",
+    "utility": "https://bitbucket.org/mutopia/utility.git"
+  },
+  "devDependencies": {
+    "less": "~1.6.1",
+    "almond": "~0.2.9",
+    "normalize-css": "~3.0.0",
+    "requirejs": "~2.1.10"
+  }
+}

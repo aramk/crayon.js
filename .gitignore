@@ -16,6 +16,10 @@ build
 
 node_modules
 
+# Bower #
+###########
+bower_components
+
 # Compiled source #
 ###################
 *.com

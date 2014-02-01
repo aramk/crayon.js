@@ -21,14 +21,17 @@
     "type": "git",
     "url": "https://github.com/aramk/crayon.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "jquery": "~2.1.0-beta3"
+  },
   "devDependencies": {
     "chai": "*",
     "mocha": "*",
     "grunt": "~0.4.2",
     "grunt-mocha": "~0.4.7",
     "grunt-mocha-test": "~0.8.1",
-    "jquery": "~2.1.0-beta3",
+    "grunt-shell": "~0.6.4",
+    "load-grunt-tasks": "~0.3.0",
     "requirejs": "~2.1.9"
   }
 }

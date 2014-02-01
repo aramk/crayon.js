@@ -5,10 +5,10 @@ chai.Assertion.includeStack = true;
 var $ = require('jquery');
 GLOBAL.jQuery = $;
 
-var plugin = require('../../src/plugin.js');
+var Crayon = require('../../src/core/Crayon.js');
 
-describe('plugin', function() {
-  it('should be true', function() {
-    expect('123').to.equal('123');
+describe('Crayon', function() {
+  it('should defined', function() {
+    expect(Crayon).to.exist;
   })
 });
